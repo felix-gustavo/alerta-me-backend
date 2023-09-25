@@ -1,4 +1,3 @@
-import { FirebaseError } from 'firebase/app'
 import { NotFoundException } from '../../exceptions'
 import { IAuthorizationService } from '../authorizationService/iAuthorizationService'
 import {
@@ -127,30 +126,27 @@ class MedicationReminderService implements IMedicationReminderService {
   update = async (
     data: UpdateMedicationReminderParams
   ): Promise<MedicationReminder> => {
-    try {
-      const authorization = await this.authorizationService.get({
-        usersType: 'user',
-        usersTypeId: data.userId,
-      })
+    const authorization = await this.authorizationService.get({
+      usersType: 'user',
+      usersTypeId: data.userId,
+    })
 
-      if (!authorization)
-        throw new NotFoundException('Autorização não encontrada')
+    if (!authorization)
+      throw new NotFoundException('Autorização não encontrada')
 
-      const docRefUser = firestore()
-        .collection('users')
-        .doc(authorization.elderly.id)
-        .collection('medication_reminder')
-        .doc(data.id)
+    const docRefUser = firestore()
+      .collection('users')
+      .doc(authorization.elderly.id)
+      .collection('medication_reminder')
+      .doc(data.id)
 
-      const docSnap = await docRefUser.get()
-      const docData = docSnap.data()
+    const docSnap = await docRefUser.get()
+    const docData = docSnap.data()
 
-      if (!docData) throw new NotFoundException('Medicamento não encontrado')
+    if (!docData) throw new NotFoundException('Medicamento não encontrado')
 
-      const dataToUpdate: Omit<
-        UpdateMedicationReminderParams,
-        'userId' | 'id'
-      > = {
+    const dataToUpdate: Omit<UpdateMedicationReminderParams, 'userId' | 'id'> =
+      {
         dosage_pronunciation: data.dosage_pronunciation,
         dosage_unit: data.dosage_unit,
         name: data.name,
@@ -160,25 +156,18 @@ class MedicationReminderService implements IMedicationReminderService {
           : undefined,
       }
 
-      for (const key in dataToUpdate) {
-        if (dataToUpdate[key as keyof typeof dataToUpdate] === null) {
-          delete dataToUpdate[key as keyof typeof dataToUpdate]
-        }
+    for (const key in dataToUpdate) {
+      if (dataToUpdate[key as keyof typeof dataToUpdate] === null) {
+        delete dataToUpdate[key as keyof typeof dataToUpdate]
       }
-
-      await docSnap.ref.update(dataToUpdate)
-
-      return {
-        ...dataToUpdate,
-        id: data.id,
-      } as MedicationReminder
-    } catch (error: unknown) {
-      if (error instanceof FirebaseError && error.code == 'not-found')
-        throw new NotFoundException('Remédio não encontrado')
-
-      console.error('Deu erro update MedicalReminderService', error)
-      throw error
     }
+
+    await docSnap.ref.update(dataToUpdate)
+
+    return {
+      ...dataToUpdate,
+      id: data.id,
+    } as MedicationReminder
   }
 }
 
