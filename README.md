@@ -47,8 +47,12 @@ O processo de autorização requer que a pessoa idosa tenha feito login
 <details>
 <summary>Como realizar um pedido de autorização?</summary>
 
-No canto inferior esquerdo, clique em `CONFIGURAÇÕES` ![Alt text](readme-assets/settings.png)
+No canto inferior esquerdo, clique em `CONFIGURAÇÕES`
+
+![Alt text](readme-assets/settings.png)
+
 Preencha o campo com o email da pessoa idosa e clique em `Registrar pedido`
+
 ![Alt text](readme-assets/authorization.png)
 
 </details>
@@ -61,17 +65,36 @@ Preencha o campo com o email da pessoa idosa e clique em `Registrar pedido`
 
 ##### Lembretes de medicamentos :medical_symbol:
 
-Cada lembrete possui uma configuração única, portanto, são solicitados os seguintes dados para cada um:
+Cada lembrete possui uma configuração única, portanto, são solicitados os seguintes dados:
+
+Esse cadatro é feito em 2 etapas, a primeira solicita informações básicas sobre o medicamento, posteriomente é solicitado informações sobre as dosagens
 
 > - Nome do medicamento
 > - Unidade da dosagem
 > - Pronúncia da dosagem (esse campo será usado para a Alexa pronunciar corretamente)
 > - Instruções
+
 > - Para cada dia da semana será solicitado:
 >   - Horário
 >   - Dosagem
 
 Armazenar o horário e a dosagem para cada dia da semana oferece maior flexibilidade na administração de medicamentos.
+
+<details>
+<summary>Tela de criação etapa 1</summary>
+
+![Alt text](readme-assets/medication-reminder-step1.png)
+
+</details>
+
+<details>
+<summary>Tela de criação etapa 2</summary>
+
+![Alt text](readme-assets/medication-reminder-step2.png)
+
+Nesse exemplo, os dias selecionado são: Domindo e Terça, sendo que para o domindo, está sendo configurado 2 horários (08:00 e 18:00) e na Terça somente 1 horário (08:00). Para os 2 dias da semana está especificado a dosagem de 10 mL do medicamento, porém, esses valores podem ser alterados conforme recomendação médica.
+
+</details>
 
 ##### Lembretes de água :droplet:
 
@@ -149,7 +172,7 @@ Desenvolvimento do website:
 - [x] Configuração de lembrete de água
 - [x] Criação de lembrete de consulta
 - [x] Edição de lembrete de consulta
-- [ ] Criação de lembrete de medicamentos
+- [x] Criação de lembrete de medicamentos
 - [ ] ...
 
 Ao concluir o cadastro e a edição de todos os lembretes no website, o desenvolvimento da skill e do website ocorrerá simultaneamente.
