@@ -11,14 +11,14 @@ class MedicalReminderRoute {
     const medicalReminderRoute = Router()
 
     medicalReminderRoute.post(
-      '/medical-reminder',
+      '/',
       createMedicalReminderValidateScheme,
       handleValidationErrors,
       this.controller.create
     )
-    medicalReminderRoute.get('/medical-reminders', this.controller.get)
+    medicalReminderRoute.get('/', this.controller.get)
     medicalReminderRoute.put(
-      '/medical-reminder/:id',
+      '/:id',
       updateMedicalReminderValidate,
       handleValidationErrors,
       this.controller.update

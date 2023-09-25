@@ -16,6 +16,9 @@ import { MedicalReminderRoute } from '../routes/medicalReminder'
 import { MedicalReminderController } from '../controllers/medicalReminderController'
 import { helloRoute } from '../routes/hello'
 import { MedicalReminderService } from '../services/medicalReminderService/medicalReminderService'
+import { MedicationReminderService } from '../services/medicationReminderService/medicationReminderService'
+import { MedicationReminderController } from '../controllers/medicationReminderController'
+import { MedicationReminderRoute } from '../routes/medicationReminder'
 
 const setup = (app: Express) => {
   const routes = Router()
@@ -25,6 +28,9 @@ const setup = (app: Express) => {
   const authorizationService = new AuthorizationService(userService)
   const waterReminderService = new WaterReminderService(authorizationService)
   const medicalReminderService = new MedicalReminderService(
+    authorizationService
+  )
+  const medicationReminderService = new MedicationReminderService(
     authorizationService
   )
 
@@ -39,6 +45,9 @@ const setup = (app: Express) => {
   const medicalReminderController = new MedicalReminderController(
     medicalReminderService
   )
+  const medicationReminderController = new MedicationReminderController(
+    medicationReminderService
+  )
 
   const authRoute = new AuthRoute(authController)
   const authorizationRoute = new AuthorizationRoute(authorizationController)
@@ -47,17 +56,29 @@ const setup = (app: Express) => {
   const medicalReminderRoute = new MedicalReminderRoute(
     medicalReminderController
   )
+  const medicationReminderRoute = new MedicationReminderRoute(
+    medicationReminderController
+  )
 
   routes.use('/', helloRoute)
   routes.use('/auth', authRoute.routes())
-  routes.use('/authorization', authorizationRoute.routes())
+  routes.use('/authorizations', authorizationRoute.routes())
   routes.use('/users', verifyTokenMiddleware, usersRoute.routes())
   routes.use(
-    '/water-reminder',
+    '/water-reminders',
     verifyTokenMiddleware,
     waterReminderRoute.routes()
   )
-  routes.use(verifyTokenMiddleware, medicalReminderRoute.routes())
+  routes.use(
+    '/medical-reminders',
+    verifyTokenMiddleware,
+    medicalReminderRoute.routes()
+  )
+  routes.use(
+    '/medication-reminders',
+    verifyTokenMiddleware,
+    medicationReminderRoute.routes()
+  )
 
   app.use(routes)
 }

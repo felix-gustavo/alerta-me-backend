@@ -3,6 +3,7 @@ import { handleValidationErrors } from '../../validations/handleValidationErrors
 import { WaterReminderController } from '../../controllers/waterReminderController'
 import { createWaterReminderValidateScheme } from '../../validations/schemes/createWaterReminderValidate'
 import { updateWaterReminderValidateScheme } from '../../validations/schemes/updateWaterReminderValidate'
+
 class WaterReminderRoute {
   constructor(private readonly controller: WaterReminderController) {}
 

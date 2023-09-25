@@ -3,6 +3,7 @@ import { handleValidationErrors } from '../../validations/handleValidationErrors
 import { UserController } from '../../controllers/userController'
 import { getUserByEmailValidateScheme } from '../../validations/schemes/getUserByEmailValidate'
 import { getUserByIdValidateScheme } from '../../validations/schemes/getUserByIdValidate'
+import { verifyTokenMiddleware } from '../../middlewares/verifyTokenMiddleware'
 
 class UserRoute {
   constructor(private readonly controller: UserController) {}
