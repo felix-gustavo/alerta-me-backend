@@ -92,7 +92,7 @@ Armazenar o horário e a dosagem para cada dia da semana oferece maior flexibili
 
 ![Alt text](readme-assets/medication-reminder-step2.png)
 
-Nesse exemplo, os dias selecionado são: Domindo e Terça, sendo que para o domindo, está sendo configurado 2 horários (08:00 e 18:00) e na Terça somente 1 horário (08:00). Para os 2 dias da semana está especificado a dosagem de 10 mL do medicamento, porém, esses valores podem ser alterados conforme recomendação médica.
+Nesse exemplo, os dias selecionado são: Segunda e Terça, sendo que para a segunda está sendo configurado 2 horários (08:00 e 18:00) e na Terça somente 1 horário (08:00). Para os 2 dias da semana está especificado a dosagem de 10 mL do medicamento, porém, esses valores podem ser alterados conforme recomendação médica.
 
 </details>
 
