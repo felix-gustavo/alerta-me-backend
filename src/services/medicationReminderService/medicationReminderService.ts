@@ -3,7 +3,7 @@ import { IAuthorizationService } from '../authorizationService/iAuthorizationSer
 import {
   CreateMedicationReminderParams,
   DayOfWeek,
-  Dosage,
+  DeleteMedicationReminderParams,
   Dose,
   GetMedicationReminderParams,
   IMedicationReminderService,
@@ -168,6 +168,33 @@ class MedicationReminderService implements IMedicationReminderService {
       ...dataToUpdate,
       id: data.id,
     } as MedicationReminder
+  }
+
+  delete = async ({
+    id,
+    userId,
+  }: DeleteMedicationReminderParams): Promise<void> => {
+    const authorization = await this.authorizationService.get({
+      usersType: 'user',
+      usersTypeId: userId,
+    })
+
+    if (!authorization)
+      throw new NotFoundException('Autorização não encontrada')
+
+    const docRefUser = firestore()
+      .collection('users')
+      .doc(authorization.elderly.id)
+      .collection('medication_reminder')
+      .doc(id)
+
+    const docSnap = await docRefUser.get()
+    const docData = docSnap.data()
+
+    if (!docData) throw new NotFoundException('Medicamento não encontrado')
+
+    await docSnap.ref.delete()
+    return
   }
 }
 
