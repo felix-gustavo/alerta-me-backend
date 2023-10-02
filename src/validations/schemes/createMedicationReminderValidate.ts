@@ -2,23 +2,19 @@ import { body } from 'express-validator'
 
 const createMedicationReminderValidateScheme = [
   body('name')
-    .escape()
     .isLength({ min: 3, max: 100 })
     .withMessage(
       'Campo [name] deve ter pelo menos 3 e no máximo 100 caracteres'
     ),
   body('dosage_unit')
-    .escape()
     .isLength({ min: 1, max: 10 })
     .withMessage('Campo [dosage_unit] deve ter no máximo 10 caracteres'),
   body('dosage_pronunciation')
-    .escape()
     .isLength({ min: 3, max: 30 })
     .withMessage(
       'Campo [dosage_pronunciation] deve ter pelo menos 3 e no máximo 30 caracteres'
     ),
   body('comments')
-    .escape()
     .optional()
     .isLength({ max: 512 })
     .withMessage('Campo [comments] deve ter no máximo 512 caracteres'),
@@ -85,14 +81,12 @@ const createMedicationReminderValidateScheme = [
     return true
   }),
   body('dose.*.*.time')
-    .escape()
     .matches(/^([01][0-9]|2[0-3]):[0-5][0-9]$/)
     .withMessage((_, { path }) => {
       const doseKey = path.split('.')[1].split('[')[0]
       return `Campo [time] precisa representar hora (HH:MM) em [${doseKey}]`
     }),
   body('dose.*.*.amount')
-    .escape()
     .isNumeric()
     .withMessage('Campo [amount] precisa sem um número'),
 ]
