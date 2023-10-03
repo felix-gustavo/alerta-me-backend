@@ -1,6 +1,7 @@
 import { IAuthorizationService } from '../authorizationService/iAuthorizationService'
 import {
   CreateMedicalReminderParams,
+  DeleteMedicalReminderParams,
   GetMedicalReminderParams,
   IMedicalReminderService,
   MedicalReminder,
@@ -140,6 +141,33 @@ class MedicalReminderService implements IMedicalReminderService {
         dataToUpdate.datetime ??
         (docData?.['datetime'] as firestore.Timestamp).toDate().toISOString(),
     } as MedicalReminder
+  }
+
+  delete = async ({
+    id,
+    userId,
+  }: DeleteMedicalReminderParams): Promise<void> => {
+    const authorization = await this.authorizationService.get({
+      usersType: 'user',
+      usersTypeId: userId,
+    })
+
+    if (!authorization)
+      throw new NotFoundException('Autorização não encontrada')
+
+    const docRefUser = firestore()
+      .collection('users')
+      .doc(authorization.elderly.id)
+      .collection('medical_reminder')
+      .doc(id)
+
+    const docSnap = await docRefUser.get()
+    const docData = docSnap.data()
+
+    if (!docData) throw new NotFoundException('Consulta não encontrada')
+
+    await docSnap.ref.delete()
+    return
   }
 }
 

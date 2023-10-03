@@ -39,10 +39,16 @@ type UpdateMedicationReminderParams = Partial<MedicationReminder> & {
   id: string
 }
 
+type DeleteMedicationReminderParams = {
+  userId: string
+  id: string
+}
+
 interface IMedicationReminderService {
   create(data: CreateMedicationReminderParams): Promise<MedicationReminder>
   get(data: GetMedicationReminderParams): Promise<MedicationReminder[] | null>
   update(data: UpdateMedicationReminderParams): Promise<MedicationReminder>
+  delete(data: DeleteMedicationReminderParams): Promise<void>
 }
 
 export {
@@ -50,6 +56,7 @@ export {
   CreateMedicationReminderParams,
   GetMedicationReminderParams,
   UpdateMedicationReminderParams,
+  DeleteMedicationReminderParams,
   MedicationReminder,
   DayOfWeek,
   Dose,
