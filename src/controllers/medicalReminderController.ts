@@ -58,9 +58,8 @@ class MedicalReminderController {
     const userId = req.user?.id
     if (!userId) throw new WithoutTokenException()
 
-    const response = await this.service.delete({ id, userId })
-
-    res.json(response)
+    await this.service.delete({ id, userId })
+    res.status(204).send()
   }
 }
 

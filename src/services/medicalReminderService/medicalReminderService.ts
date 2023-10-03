@@ -41,10 +41,10 @@ class MedicalReminderService implements IMedicalReminderService {
       datetime: date,
     }
 
-    await docRefUser.add(dataToSave)
+    const docRef = await docRefUser.add(dataToSave)
 
     return {
-      id: docRefUser.id,
+      id: docRef.id,
       address: dataToSave.address,
       medic_name: dataToSave.medic_name,
       specialty: dataToSave.specialty,
