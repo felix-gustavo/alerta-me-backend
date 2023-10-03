@@ -3,7 +3,7 @@ import { handleValidationErrors } from '../../validations/handleValidationErrors
 import { createMedicationReminderValidateScheme } from '../../validations/schemes/createMedicationReminderValidate'
 import { MedicationReminderController } from '../../controllers/medicationReminderController'
 import { updateMedicationReminderValidate } from '../../validations/schemes/updateMedicationReminderValidate'
-import { deleteMedicationReminderValidate } from '../../validations/schemes/deleteMedicationReminderValidate'
+import { deleteReminderValidate } from '../../validations/schemes/deleteReminderValidate'
 
 class MedicationReminderRoute {
   constructor(private readonly controller: MedicationReminderController) {}
@@ -26,7 +26,7 @@ class MedicationReminderRoute {
     )
     medicationReminderRoute.delete(
       '/:id',
-      deleteMedicationReminderValidate,
+      deleteReminderValidate,
       handleValidationErrors,
       this.controller.delete
     )

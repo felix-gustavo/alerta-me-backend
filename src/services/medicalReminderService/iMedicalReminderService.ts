@@ -20,10 +20,16 @@ type UpdateMedicalReminderParams = Partial<MedicalReminder> & {
   id: string
 }
 
+type DeleteMedicalReminderParams = {
+  userId: string
+  id: string
+}
+
 interface IMedicalReminderService {
   create(data: CreateMedicalReminderParams): Promise<MedicalReminder>
   get(data: GetMedicalReminderParams): Promise<MedicalReminder[] | null>
   update(data: UpdateMedicalReminderParams): Promise<MedicalReminder>
+  delete(data: DeleteMedicalReminderParams): Promise<void>
 }
 
 export {
@@ -31,5 +37,6 @@ export {
   CreateMedicalReminderParams,
   GetMedicalReminderParams,
   UpdateMedicalReminderParams,
+  DeleteMedicalReminderParams,
   MedicalReminder,
 }

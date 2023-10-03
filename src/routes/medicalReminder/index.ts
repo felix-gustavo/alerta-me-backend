@@ -3,6 +3,7 @@ import { handleValidationErrors } from '../../validations/handleValidationErrors
 import { MedicalReminderController } from '../../controllers/medicalReminderController'
 import { createMedicalReminderValidateScheme } from '../../validations/schemes/createMedicalReminderValidate'
 import { updateMedicalReminderValidate } from '../../validations/schemes/updateMedicalReminderValidate'
+import { deleteReminderValidate } from '../../validations/schemes/deleteReminderValidate'
 
 class MedicalReminderRoute {
   constructor(private readonly controller: MedicalReminderController) {}
@@ -22,6 +23,12 @@ class MedicalReminderRoute {
       updateMedicalReminderValidate,
       handleValidationErrors,
       this.controller.update
+    )
+    medicalReminderRoute.delete(
+      '/:id',
+      deleteReminderValidate,
+      handleValidationErrors,
+      this.controller.delete
     )
 
     return medicalReminderRoute
