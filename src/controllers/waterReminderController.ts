@@ -3,6 +3,7 @@ import { CustomRequest } from '../middlewares/verifyTokenMiddleware'
 import {
   CreateWaterReminderParams,
   IWaterReminderService,
+  UpdateWaterReminderParams,
 } from '../services/waterReminderService/iWaterReminderService'
 import { WithoutTokenException } from '../exceptions'
 
@@ -36,7 +37,7 @@ class WaterReminderController {
     const userId = req.user?.id
     if (!userId) throw new WithoutTokenException()
 
-    const data: Omit<CreateWaterReminderParams, 'userId'> = req.body
+    const data: Omit<UpdateWaterReminderParams, 'userId'> = req.body
 
     const response = await this.waterReminderService.update({
       ...data,

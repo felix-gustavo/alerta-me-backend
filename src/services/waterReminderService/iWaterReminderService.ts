@@ -1,4 +1,4 @@
-interface CreateWaterReminderParams {
+type CreateWaterReminderParams = {
   userId: string
   start: string
   end: string
@@ -6,24 +6,25 @@ interface CreateWaterReminderParams {
   amount: string
 }
 
-interface WaterReminder {
+type WaterReminder = {
   start: number
   end: number
   interval: number
   amount: number
+  active: boolean
 }
 
-interface GetWaterReminderParams {
+type GetWaterReminderParams = {
   userId: string
 }
 
-interface IWaterReminderService {
+type UpdateWaterReminderParams = Pick<CreateWaterReminderParams, 'userId'> &
+  Partial<Omit<CreateWaterReminderParams, 'userId'> & { active: boolean }>
+
+type IWaterReminderService = {
   create(data: CreateWaterReminderParams): Promise<WaterReminder>
   get(data: GetWaterReminderParams): Promise<WaterReminder | null>
-  update(
-    data: Pick<CreateWaterReminderParams, 'userId'> &
-      Partial<Omit<CreateWaterReminderParams, 'userId'>>
-  ): Promise<WaterReminder>
+  update(data: UpdateWaterReminderParams): Promise<WaterReminder>
 }
 
 export {
@@ -31,4 +32,5 @@ export {
   CreateWaterReminderParams,
   WaterReminder,
   GetWaterReminderParams,
+  UpdateWaterReminderParams,
 }

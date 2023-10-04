@@ -1,22 +1,12 @@
 import { body } from 'express-validator'
+import { createWaterReminderValidateScheme } from './createWaterReminderValidate'
 
 const updateWaterReminderValidateScheme = [
-  body('start')
+  body('active')
     .optional()
-    .matches(/^([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/)
-    .withMessage('Campo start precisa representar hora (HH:MM:SS)'),
-  body('end')
-    .optional()
-    .matches(/^([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/)
-    .withMessage('Campo end precisa representar hora (HH:MM:SS)'),
-  body('interval')
-    .optional()
-    .isNumeric()
-    .withMessage('Campo interval precisa sem um número'),
-  body('amount')
-    .optional()
-    .isNumeric()
-    .withMessage('Campo amount precisa sem um número'),
+    .isBoolean()
+    .withMessage('Campo active precisa ser um booleano (true, false)'),
+  createWaterReminderValidateScheme.map((check) => check.optional()),
 ]
 
 export { updateWaterReminderValidateScheme }

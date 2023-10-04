@@ -3,6 +3,7 @@ import {
   CreateWaterReminderParams,
   GetWaterReminderParams,
   IWaterReminderService,
+  UpdateWaterReminderParams,
   WaterReminder,
 } from './iWaterReminderService'
 import { IAuthorizationService } from '../authorizationService/iAuthorizationService'
@@ -13,8 +14,8 @@ class WaterReminderService implements IWaterReminderService {
   constructor(private readonly authorizationService: IAuthorizationService) {}
 
   create = async (data: CreateWaterReminderParams): Promise<WaterReminder> => {
-    const start = DateFormat.formatHHMMSSToNumber(data.start)
-    const end = DateFormat.formatHHMMSSToNumber(data.end)
+    const start = DateFormat.formatHHMMToNumber(data.start)
+    const end = DateFormat.formatHHMMToNumber(data.end)
     const interval = parseInt(data.interval)
     const amount = parseInt(data.amount)
     const id = data.userId
@@ -43,6 +44,7 @@ class WaterReminderService implements IWaterReminderService {
       end,
       interval,
       amount,
+      active: true,
     }
 
     await docRefUser.add(dataToSave)
@@ -71,16 +73,12 @@ class WaterReminderService implements IWaterReminderService {
     return docSnap.data() as WaterReminder
   }
 
-  update = async (
-    data: Pick<CreateWaterReminderParams, 'userId'> &
-      Partial<Omit<CreateWaterReminderParams, 'userId'>>
-  ): Promise<WaterReminder> => {
-    const start = data.start
-      ? DateFormat.formatHHMMSSToNumber(data.start)
-      : null
-    const end = data.end ? DateFormat.formatHHMMSSToNumber(data.end) : null
+  update = async (data: UpdateWaterReminderParams): Promise<WaterReminder> => {
+    const start = data.start ? DateFormat.formatHHMMToNumber(data.start) : null
+    const end = data.end ? DateFormat.formatHHMMToNumber(data.end) : null
     const interval = data.interval ? parseInt(data.interval) : null
     const amount = data.amount ? parseInt(data.amount) : null
+    const active = data.active ?? null
 
     const authorization = await this.authorizationService.get({
       usersType: 'user',
@@ -109,6 +107,7 @@ class WaterReminderService implements IWaterReminderService {
       end,
       interval,
       amount,
+      active,
     }
 
     for (const key in dataToUpdate) {
@@ -124,6 +123,7 @@ class WaterReminderService implements IWaterReminderService {
       end: dataToUpdate.end ?? docData['end'],
       amount: dataToUpdate.amount ?? docData['amount'],
       interval: dataToUpdate.interval ?? docData['interval'],
+      active: dataToUpdate.active ?? docData['active'],
     } as WaterReminder
   }
 }
