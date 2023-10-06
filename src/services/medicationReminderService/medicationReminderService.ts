@@ -145,16 +145,15 @@ class MedicationReminderService implements IMedicationReminderService {
 
     if (!docData) throw new NotFoundException('Medicamento não encontrado')
 
-    const dataToUpdate: Omit<UpdateMedicationReminderParams, 'userId' | 'id'> =
-      {
-        dosage_pronunciation: data.dosage_pronunciation,
-        dosage_unit: data.dosage_unit,
-        name: data.name,
-        comments: data.comments,
-        dose: data.dose
-          ? this.convertDoseToSave(this.cleanDose(data.dose))
-          : undefined,
-      }
+    const dataToUpdate = {
+      dosage_pronunciation: data.dosage_pronunciation ?? null,
+      dosage_unit: data.dosage_unit ?? null,
+      name: data.name ?? null,
+      comments: data.comments ?? null,
+      dose: data.dose
+        ? this.convertDoseToSave(this.cleanDose(data.dose))
+        : null,
+    }
 
     for (const key in dataToUpdate) {
       if (dataToUpdate[key as keyof typeof dataToUpdate] === null) {
@@ -165,8 +164,13 @@ class MedicationReminderService implements IMedicationReminderService {
     await docSnap.ref.update(dataToUpdate)
 
     return {
-      ...dataToUpdate,
       id: data.id,
+      name: dataToUpdate.name ?? docData['name'],
+      dosage_unit: dataToUpdate.dosage_unit ?? docData['dosage_unit'],
+      dosage_pronunciation:
+        dataToUpdate.dosage_pronunciation ?? docData['dosage_pronunciation'],
+      comments: dataToUpdate.comments ?? docData['comments'],
+      dose: dataToUpdate.dose ?? docData['dose'],
     } as MedicationReminder
   }
 }
