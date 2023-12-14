@@ -14,6 +14,7 @@ class AuthRoute {
       handleValidationErrors,
       this.controller.signIn
     )
+    authRoute.post('/sign-in-elderly', this.controller.signInElderly)
     return authRoute
   }
 }

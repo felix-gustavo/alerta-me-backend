@@ -3,7 +3,7 @@ import { createMedicationReminderValidateScheme } from './createMedicationRemind
 
 const updateMedicationReminderValidate = [
   param('id').notEmpty().withMessage('Campo id é obrigatório'),
-  createMedicationReminderValidateScheme.map((check) => check.optional()),
+  ...createMedicationReminderValidateScheme.map((check) => check.optional()),
 ]
 
 export { updateMedicationReminderValidate }

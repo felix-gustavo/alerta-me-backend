@@ -6,7 +6,7 @@ const updateWaterReminderValidateScheme = [
     .optional()
     .isBoolean()
     .withMessage('Campo active precisa ser um booleano (true, false)'),
-  createWaterReminderValidateScheme.map((check) => check.optional()),
+  ...createWaterReminderValidateScheme.map((check) => check.optional()),
 ]
 
 export { updateWaterReminderValidateScheme }

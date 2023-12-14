@@ -1,10 +1,26 @@
-import { SessionExpiredException } from '../exceptions'
+import axios from 'axios'
+import { SessionExpiredException, UnprocessableException } from '../exceptions'
 import { IUsersService, Users } from './usersService/iUsersService'
 import { auth } from 'firebase-admin'
 
 type SignInParams = {
   idToken: string
   isElderly: boolean
+}
+
+type SignInElderlyParams = {
+  redirectUri: string
+  clientId: string
+  code: string
+  grantType: string
+  authorization: string
+}
+
+type TokenResponse = {
+  access_token: string
+  refresh_token: string
+  token_type: string
+  expires_in: number
 }
 
 class AuthService {
@@ -23,12 +39,64 @@ class AuthService {
           name: decodedToken['name'] ?? '',
           email: decodedToken.email ?? '',
           is_elderly: isElderly,
+          refresh_token: null,
         })
       }
 
       return user
     } catch (error) {
       throw new SessionExpiredException()
+    }
+  }
+
+  async signInElderly({
+    authorization,
+    clientId,
+    code,
+    grantType,
+    redirectUri,
+  }: SignInElderlyParams): Promise<TokenResponse> {
+    try {
+      const decodedCredentials = Buffer.from(
+        authorization.split(' ')[1],
+        'base64'
+      ).toString('utf-8')
+      const [, clientSecretFromHeader] = decodedCredentials.split(':')
+
+      const tokenResponse = await axios.post(
+        'https://api.amazon.com/auth/o2/token',
+        null,
+        {
+          params: {
+            grant_type: grantType,
+            client_id: clientId,
+            client_secret: clientSecretFromHeader,
+            redirect_uri: redirectUri,
+            code: code,
+          },
+        }
+      )
+
+      const accessToken = tokenResponse.data.access_token
+      const refreshToken = tokenResponse.data.refresh_token
+
+      const profileResponse = await axios.get(
+        'https://api.amazon.com/user/profile',
+        { params: { access_token: accessToken } }
+      )
+
+      const { email, name, user_id } = profileResponse.data
+
+      await this.usersService.create({
+        id: user_id,
+        name,
+        email,
+        is_elderly: true,
+        refresh_token: refreshToken,
+      })
+      return tokenResponse.data
+    } catch (error) {
+      throw new UnprocessableException()
     }
   }
 }

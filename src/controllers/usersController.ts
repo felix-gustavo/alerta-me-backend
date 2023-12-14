@@ -1,8 +1,25 @@
 import { Response, Request } from 'express'
-import { IUsersService } from '../services/usersService/iUsersService'
+import {
+  CreateUsers,
+  IUsersService,
+} from '../services/usersService/iUsersService'
 
-class UserController {
+class UsersController {
   constructor(private readonly userService: IUsersService) {}
+
+  create = async (req: Request, res: Response) => {
+    const data: CreateUsers = req.body
+
+    res.json(
+      await this.userService.create({
+        id: data.id,
+        name: data.name,
+        email: data.email,
+        is_elderly: data.is_elderly,
+        refresh_token: data.refresh_token ?? null,
+      })
+    )
+  }
 
   getById = async (req: Request, res: Response) => {
     const id = req.params.id as string
@@ -20,4 +37,4 @@ class UserController {
   }
 }
 
-export { UserController }
+export { UsersController }

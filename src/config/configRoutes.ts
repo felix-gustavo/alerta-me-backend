@@ -3,7 +3,7 @@ import { AuthRoute } from '../routes/auth'
 import { AuthController } from '../controllers/authController'
 import { AuthService } from '../services/authService'
 import { UserRoute } from '../routes/user'
-import { UserController } from '../controllers/userController'
+import { UsersController } from '../controllers/usersController'
 import { UsersService } from '../services/usersService/usersService'
 import { verifyTokenMiddleware } from '../middlewares/verifyTokenMiddleware'
 import { AuthorizationRoute } from '../routes/authorization'
@@ -23,9 +23,9 @@ import { MedicationReminderRoute } from '../routes/medicationReminder'
 const setup = (app: Express) => {
   const routes = Router()
 
-  const userService = UsersService.getInstance()
-  const authService = new AuthService(userService)
-  const authorizationService = new AuthorizationService(userService)
+  const usersService = UsersService.getInstance()
+  const authService = new AuthService(usersService)
+  const authorizationService = new AuthorizationService(usersService)
   const waterReminderService = new WaterReminderService(authorizationService)
   const medicalReminderService = new MedicalReminderService(
     authorizationService
@@ -38,7 +38,7 @@ const setup = (app: Express) => {
   const authorizationController = new AuthorizationController(
     authorizationService
   )
-  const usersController = new UserController(userService)
+  const usersController = new UsersController(usersService)
   const waterReminderController = new WaterReminderController(
     waterReminderService
   )
@@ -63,7 +63,7 @@ const setup = (app: Express) => {
   routes.use('/', helloRoute)
   routes.use('/auth', authRoute.routes())
   routes.use('/authorizations', authorizationRoute.routes())
-  routes.use('/users', verifyTokenMiddleware, usersRoute.routes())
+  routes.use('/users', usersRoute.routes())
   routes.use(
     '/water-reminders',
     verifyTokenMiddleware,

@@ -1,23 +1,42 @@
 import { Response, Request } from 'express'
 import { AuthService } from '../services/authService'
-import { CustomRequest } from '../middlewares/verifyTokenMiddleware'
-import { UnauthorizedException } from '../exceptions'
 
 class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private readonly authService: AuthService) {}
 
   signIn = async (req: Request, res: Response) => {
     const { idToken }: { idToken: string } = req.body
-    const isElderly = (req.query.isElderly as string | undefined) === 'true'
 
     console.log('idToken: ', idToken)
 
     const response = await this.authService.signIn({
       idToken: idToken,
-      isElderly: isElderly,
+      isElderly: false,
     })
 
     res.json(response)
+  }
+
+  signInElderly = async (req: Request, res: Response) => {
+    const redirectUri = req.body.redirect_uri
+    const clientId = req.body.client_id
+    const code = req.body.code
+    const grantType = req.body.grant_type
+
+    const authorizationHeader = req.headers.authorization
+
+    if (!authorizationHeader)
+      return res.status(400).send('Cabeçalho de autorização ausente')
+
+    const response = await this.authService.signInElderly({
+      redirectUri,
+      clientId,
+      code,
+      grantType,
+      authorization: authorizationHeader,
+    })
+
+    return res.json(response)
   }
 }
 

@@ -5,7 +5,7 @@ import {
   UnauthorizedException,
   UserCreationException,
 } from '../../exceptions'
-import { IUsersService, Users } from './iUsersService'
+import { CreateUsers, IUsersService, Users } from './iUsersService'
 
 class UsersService implements IUsersService {
   private static instance: UsersService
@@ -17,9 +17,27 @@ class UsersService implements IUsersService {
     return UsersService.instance
   }
 
-  async create(data: Omit<Users, 'id'>): Promise<Users> {
+  async create(data: CreateUsers): Promise<Users> {
     try {
-      const docRef = await firestore().collection('users').add(data)
+      const usersCollection = firestore().collection('users')
+      const id = data.id
+      delete data.id
+      if (id) {
+        await usersCollection.doc(id).set(data)
+        return {
+          ...data,
+          id,
+        }
+      }
+
+      const filteredData = Object.fromEntries(
+        Object.entries(data).map(([key, value]) => [
+          key,
+          value === undefined ? null : value,
+        ])
+      )
+
+      const docRef = await usersCollection.add(filteredData)
       return {
         ...data,
         id: docRef.id,
