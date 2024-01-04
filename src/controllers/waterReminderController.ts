@@ -1,11 +1,11 @@
 import { Response } from 'express'
-import { CustomRequest } from '../middlewares/verifyTokenMiddleware'
 import {
   CreateWaterReminderParams,
   IWaterReminderService,
   UpdateWaterReminderParams,
 } from '../services/waterReminderService/iWaterReminderService'
 import { WithoutTokenException } from '../exceptions'
+import { CustomRequest } from '../middlewares/decodeTokenMiddleware'
 
 class WaterReminderController {
   constructor(private readonly waterReminderService: IWaterReminderService) {}

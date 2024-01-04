@@ -3,6 +3,7 @@ import {
   NotFoundException,
   NotIsElderlyException,
   UnauthorizedException,
+  UnprocessableException,
 } from '../../exceptions'
 import { IUsersService } from '../usersService/iUsersService'
 import {
@@ -23,7 +24,10 @@ class AuthorizationService implements IAuthorizationService {
     elderlyEmail,
     userId,
   }: CreateAuthorizationParams): Promise<Authorization> {
-    const elderlyUser = await this.usersService.getByEmail(elderlyEmail)
+    const elderlyUser = await this.usersService.getByEmailAndType({
+      email: elderlyEmail,
+      isElderly: true,
+    })
     if (!elderlyUser) throw new NotFoundException('Idoso não encontrado')
     if (!elderlyUser.is_elderly) throw new NotIsElderlyException()
 
@@ -60,34 +64,27 @@ class AuthorizationService implements IAuthorizationService {
     usersTypeId,
     usersType,
   }: GetAuthorizationParams): Promise<Authorization | null> {
-    try {
-      const myQuery = firestore()
-        .collection('authorizations')
-        .where(usersType, '==', usersTypeId)
+    const myQuery = firestore()
+      .collection('authorizations')
+      .where(usersType, '==', usersTypeId)
 
-      const snapshot = await myQuery.get()
-      if (snapshot.empty) return null
+    const snapshot = await myQuery.get()
+    if (snapshot.empty) return null
 
-      const queryDocumentSnapshot = snapshot.docs[0]
-      const docData = queryDocumentSnapshot.data()
+    const queryDocumentSnapshot = snapshot.docs[0]
+    const docData = queryDocumentSnapshot.data()
 
-      const elderly = await this.usersService.getById(docData.elderly)
-      if (!elderly) throw new NotFoundException('Idoso não encontrado')
+    const elderly = await this.usersService.getById(docData.elderly)
+    if (!elderly) throw new NotFoundException('Idoso não encontrado')
 
-      const user = await this.usersService.getById(docData.user)
-      if (!user) throw new NotFoundException('Usuário não encontrado')
+    const user = await this.usersService.getById(docData.user)
+    if (!user) throw new NotFoundException('Usuário não encontrado')
 
-      return {
-        id: queryDocumentSnapshot.id,
-        elderly,
-        status: docData.status,
-        user,
-      }
-    } catch (error) {
-      if (error instanceof FirebaseError)
-        throw new AuthorizationCreationException()
-
-      throw error
+    return {
+      id: queryDocumentSnapshot.id,
+      elderly,
+      status: docData.status,
+      user,
     }
   }
 
@@ -110,11 +107,32 @@ class AuthorizationService implements IAuthorizationService {
 
       await docRef.update({ status })
     } catch (error) {
-      if (error instanceof FirebaseError)
-        throw new AuthorizationCreationException()
+      if (error instanceof FirebaseError) throw new UnprocessableException()
+
+      throw error
+    }
+  }
+
+  async delete({ userId }: { userId: string }): Promise<string> {
+    try {
+      const myQuery = firestore()
+        .collection('authorizations')
+        .where('user', '==', userId)
+
+      const snapshot = await myQuery.get()
+      if (snapshot.empty)
+        throw new NotFoundException('Documento não encontrado')
+
+      const queryDocumentSnapshot = snapshot.docs[0]
+      const id = queryDocumentSnapshot.id
+      await queryDocumentSnapshot.ref.delete()
+      return id
+    } catch (error) {
+      if (error instanceof FirebaseError) throw new UnprocessableException()
 
       throw error
     }
   }
 }
+
 export { AuthorizationService }

@@ -8,11 +8,30 @@ type Users = {
 
 type CreateUsers = Omit<Users, 'id'> & { id?: string }
 
-interface IUsersService {
-  create(data: CreateUsers): Promise<Users>
-  isElderly(id: string): Promise<boolean>
-  getById(id: string): Promise<Users | null>
-  getByEmail(email: string): Promise<Users | null>
+type DeleteElderlyParams = {
+  id: string
+  userId: string
 }
 
-export { IUsersService, Users, CreateUsers }
+type GetByEmailAndTypeParams = {
+  email: string
+  isElderly: boolean
+}
+interface IUsersService {
+  create(data: CreateUsers): Promise<Users>
+  getById(id: string): Promise<Users | null>
+  getByEmailAndType({
+    email,
+    isElderly,
+  }: GetByEmailAndTypeParams): Promise<Users | null>
+  delete(data: { userId: string }): Promise<string>
+  deleteElderly(data: DeleteElderlyParams): Promise<void>
+}
+
+export {
+  IUsersService,
+  Users,
+  CreateUsers,
+  DeleteElderlyParams,
+  GetByEmailAndTypeParams,
+}

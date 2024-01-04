@@ -32,6 +32,7 @@ interface IAuthorizationService {
   create(data: CreateAuthorizationParams): Promise<Authorization>
   get(data: GetAuthorizationParams): Promise<Authorization | null>
   updateStatus(data: UpdateAuthorizationParams): Promise<void>
+  delete(data: { userId: string }): Promise<string>
 }
 
 export {

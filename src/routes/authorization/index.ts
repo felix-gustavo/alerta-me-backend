@@ -2,8 +2,11 @@ import { Router } from 'express'
 import { AuthorizationController } from '../../controllers/authorizationController'
 import { handleValidationErrors } from '../../validations/handleValidationErrors'
 import { createAuthorizationValidateScheme } from '../../validations/schemes/createAuthorizationValidate'
-import { verifyTokenMiddleware } from '../../middlewares/verifyTokenMiddleware'
 import { updateAuthorizationValidateScheme } from '../../validations/schemes/updateAuthorizationValidate'
+import {
+  decodeAmazonTokenMiddleware,
+  decodeFirebaseTokenMiddleware,
+} from '../../middlewares/decodeTokenMiddleware'
 
 class AuthorizationRoute {
   constructor(private readonly controller: AuthorizationController) {}
@@ -15,19 +18,19 @@ class AuthorizationRoute {
       '/',
       createAuthorizationValidateScheme,
       handleValidationErrors,
-      verifyTokenMiddleware,
+      decodeFirebaseTokenMiddleware,
       this.controller.create
     )
 
     authorizationRoute.get(
       '/user',
-      verifyTokenMiddleware,
+      decodeFirebaseTokenMiddleware,
       this.controller.getAuthorizationByUser
     )
 
     authorizationRoute.get(
       '/elderly',
-      verifyTokenMiddleware,
+      decodeAmazonTokenMiddleware,
       this.controller.getAuthorizationByElderly
     )
 
@@ -35,8 +38,14 @@ class AuthorizationRoute {
       '/elderly/approve',
       updateAuthorizationValidateScheme,
       handleValidationErrors,
-      verifyTokenMiddleware,
+      decodeAmazonTokenMiddleware,
       this.controller.approvedAuthorizationElderly
+    )
+
+    authorizationRoute.delete(
+      '/',
+      decodeFirebaseTokenMiddleware,
+      this.controller.deleteAuthorization
     )
 
     return authorizationRoute

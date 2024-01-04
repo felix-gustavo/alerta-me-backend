@@ -1,19 +1,13 @@
 import { Response, Request } from 'express'
 import { AuthService } from '../services/authService'
+import axios from 'axios'
 
 class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   signIn = async (req: Request, res: Response) => {
     const { idToken }: { idToken: string } = req.body
-
-    console.log('idToken: ', idToken)
-
-    const response = await this.authService.signIn({
-      idToken: idToken,
-      isElderly: false,
-    })
-
+    const response = await this.authService.signIn(idToken)
     res.json(response)
   }
 
@@ -37,6 +31,19 @@ class AuthController {
     })
 
     return res.json(response)
+  }
+
+  refreshToken = async (req: Request, res: Response) => {
+    const refreshToken = req.body.refreshToken
+
+    const clientId = process.env.CLIENTE_ID
+    const clientSecret = process.env.CLIENTE_SECRET
+
+    const response = await axios.post(
+      `https://api.amazon.com/auth/o2/token?grant_type=refresh_token&refresh_token=${refreshToken}&client_id=${clientId}&client_secret=${clientSecret}`,
+      null
+    )
+    return res.json(response.data)
   }
 }
 

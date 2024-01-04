@@ -3,6 +3,8 @@ import {
   CreateUsers,
   IUsersService,
 } from '../services/usersService/iUsersService'
+import { CustomRequest } from '../middlewares/decodeTokenMiddleware'
+import { UnauthorizedException } from '../exceptions'
 
 class UsersController {
   constructor(private readonly userService: IUsersService) {}
@@ -26,14 +28,34 @@ class UsersController {
     res.json(await this.userService.getById(id))
   }
 
-  getByEmail = async (req: Request, res: Response) => {
+  getByEmailAndType = async (req: Request, res: Response) => {
     const email = req.params.email as string
-    res.json(await this.userService.getByEmail(email))
+    const isElderly = (req.query.isElderly as string | undefined) === 'true'
+
+    res.json(
+      await this.userService.getByEmailAndType({
+        email,
+        isElderly,
+      })
+    )
   }
 
-  isElderly = async (req: Request, res: Response) => {
-    const email = req.params.email as string
-    res.json(await this.userService.isElderly(email))
+  delete = async (req: CustomRequest, res: Response) => {
+    const userId = req.user?.id
+    if (!userId) throw new UnauthorizedException()
+
+    const id = await this.userService.delete({ userId })
+    res.json({ id })
+  }
+
+  deleteElderly = async (req: CustomRequest, res: Response) => {
+    const { id }: { id: string } = req.body
+
+    const userId = req.user?.id
+    if (!userId) throw new UnauthorizedException()
+
+    await this.userService.deleteElderly({ id, userId })
+    res.json({ id })
   }
 }
 

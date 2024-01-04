@@ -5,7 +5,6 @@ import { AuthService } from '../services/authService'
 import { UserRoute } from '../routes/user'
 import { UsersController } from '../controllers/usersController'
 import { UsersService } from '../services/usersService/usersService'
-import { verifyTokenMiddleware } from '../middlewares/verifyTokenMiddleware'
 import { AuthorizationRoute } from '../routes/authorization'
 import { AuthorizationController } from '../controllers/authorizationController'
 import { AuthorizationService } from '../services/authorizationService/authorizationService'
@@ -19,6 +18,7 @@ import { MedicalReminderService } from '../services/medicalReminderService/medic
 import { MedicationReminderService } from '../services/medicationReminderService/medicationReminderService'
 import { MedicationReminderController } from '../controllers/medicationReminderController'
 import { MedicationReminderRoute } from '../routes/medicationReminder'
+import { decodeFirebaseTokenMiddleware } from '../middlewares/decodeTokenMiddleware'
 
 const setup = (app: Express) => {
   const routes = Router()
@@ -66,17 +66,17 @@ const setup = (app: Express) => {
   routes.use('/users', usersRoute.routes())
   routes.use(
     '/water-reminders',
-    verifyTokenMiddleware,
+    decodeFirebaseTokenMiddleware,
     waterReminderRoute.routes()
   )
   routes.use(
     '/medical-reminders',
-    verifyTokenMiddleware,
+    decodeFirebaseTokenMiddleware,
     medicalReminderRoute.routes()
   )
   routes.use(
     '/medication-reminders',
-    verifyTokenMiddleware,
+    decodeFirebaseTokenMiddleware,
     medicationReminderRoute.routes()
   )
 

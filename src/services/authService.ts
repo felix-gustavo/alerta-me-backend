@@ -3,11 +3,6 @@ import { SessionExpiredException, UnprocessableException } from '../exceptions'
 import { IUsersService, Users } from './usersService/iUsersService'
 import { auth } from 'firebase-admin'
 
-type SignInParams = {
-  idToken: string
-  isElderly: boolean
-}
-
 type SignInElderlyParams = {
   redirectUri: string
   clientId: string
@@ -26,19 +21,20 @@ type TokenResponse = {
 class AuthService {
   constructor(private readonly usersService: IUsersService) {}
 
-  async signIn({ idToken, isElderly }: SignInParams): Promise<Users> {
+  async signIn(idToken: string): Promise<Users> {
     try {
       const decodedToken = await auth().verifyIdToken(idToken)
 
-      let user = await this.usersService.getByEmail(decodedToken.email ?? '')
-
-      console.log('user: ', user?.email)
+      let user = await this.usersService.getByEmailAndType({
+        email: decodedToken.email ?? '',
+        isElderly: false,
+      })
 
       if (!user) {
         user = await this.usersService.create({
           name: decodedToken['name'] ?? '',
           email: decodedToken.email ?? '',
-          is_elderly: isElderly,
+          is_elderly: false,
           refresh_token: null,
         })
       }

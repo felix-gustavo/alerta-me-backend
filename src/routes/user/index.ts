@@ -1,10 +1,15 @@
-import { Router } from 'express'
+import { NextFunction, Response, Router } from 'express'
 import { handleValidationErrors } from '../../validations/handleValidationErrors'
 import { UsersController } from '../../controllers/usersController'
 import { getUserByEmailValidateScheme } from '../../validations/schemes/getUserByEmailValidate'
 import { getUserByIdValidateScheme } from '../../validations/schemes/getUserByIdValidate'
-import { verifyTokenMiddleware } from '../../middlewares/verifyTokenMiddleware'
 import { createUserValidateScheme } from '../../validations/schemes/createUserValidate'
+import {
+  CustomRequest,
+  decodeFirebaseTokenMiddleware,
+  decodeAmazonTokenMiddleware,
+} from '../../middlewares/decodeTokenMiddleware'
+import { deleteValidateScheme } from '../../validations/schemes/deleteValidate'
 
 class UserRoute {
   constructor(private readonly controller: UsersController) {}
@@ -23,7 +28,7 @@ class UserRoute {
       '/id/:id',
       getUserByIdValidateScheme,
       handleValidationErrors,
-      verifyTokenMiddleware,
+      decodeFirebaseTokenMiddleware,
       this.controller.getById
     )
 
@@ -31,16 +36,36 @@ class UserRoute {
       '/email/:email',
       getUserByEmailValidateScheme,
       handleValidationErrors,
-      verifyTokenMiddleware,
-      this.controller.getByEmail
+      (req: CustomRequest, res: Response, next: NextFunction) => {
+        const isElderly = (req.query.isElderly as string | undefined) === 'true'
+
+        return isElderly
+          ? decodeAmazonTokenMiddleware(req, res, next)
+          : decodeFirebaseTokenMiddleware(req, res, next)
+      },
+      (req: CustomRequest, res: Response) => res.json(req.user)
     )
 
     authRoute.get(
-      '/is-elderly/:email',
-      getUserByEmailValidateScheme,
+      '/',
+      (req: CustomRequest, res: Response, next: NextFunction) => {
+        const isElderly = (req.query.isElderly as string | undefined) === 'true'
+
+        return isElderly
+          ? decodeAmazonTokenMiddleware(req, res, next)
+          : decodeFirebaseTokenMiddleware(req, res, next)
+      },
+      (req: CustomRequest, res: Response) => res.json(req.user)
+    )
+
+    authRoute.delete('/', decodeFirebaseTokenMiddleware, this.controller.delete)
+
+    authRoute.delete(
+      '/elderly',
+      deleteValidateScheme,
       handleValidationErrors,
-      verifyTokenMiddleware,
-      this.controller.isElderly
+      decodeFirebaseTokenMiddleware,
+      this.controller.deleteElderly
     )
 
     return authRoute

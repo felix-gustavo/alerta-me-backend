@@ -1,11 +1,11 @@
 import { Response } from 'express'
-import { CustomRequest } from '../middlewares/verifyTokenMiddleware'
 import { WithoutTokenException } from '../exceptions'
 import {
   CreateMedicalReminderParams,
   IMedicalReminderService,
   UpdateMedicalReminderParams,
 } from '../services/medicalReminderService/iMedicalReminderService'
+import { CustomRequest } from '../middlewares/decodeTokenMiddleware'
 
 class MedicalReminderController {
   constructor(private readonly service: IMedicalReminderService) {}

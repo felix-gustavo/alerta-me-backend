@@ -1,7 +1,7 @@
 import { Response } from 'express'
-import { CustomRequest } from '../middlewares/verifyTokenMiddleware'
 import { IAuthorizationService } from '../services/authorizationService/iAuthorizationService'
 import { UnauthorizedException } from '../exceptions'
+import { CustomRequest } from '../middlewares/decodeTokenMiddleware'
 
 class AuthorizationController {
   constructor(private readonly authorizationService: IAuthorizationService) {}
@@ -57,6 +57,15 @@ class AuthorizationController {
     })
 
     res.status(204).send()
+  }
+
+  deleteAuthorization = async (req: CustomRequest, res: Response) => {
+    const userId = req.user?.id
+    if (!userId) throw new UnauthorizedException()
+
+    const id = await this.authorizationService.delete({ userId })
+
+    res.json({ id })
   }
 }
 

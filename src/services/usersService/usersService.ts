@@ -1,11 +1,18 @@
 import { firestore } from 'firebase-admin'
 import { FirebaseError } from '@firebase/util'
 import {
-  NotFoundException,
   UnauthorizedException,
+  UnprocessableException,
   UserCreationException,
 } from '../../exceptions'
-import { CreateUsers, IUsersService, Users } from './iUsersService'
+import {
+  CreateUsers,
+  DeleteElderlyParams,
+  GetByEmailAndTypeParams,
+  IUsersService,
+  Users,
+} from './iUsersService'
+import { AuthorizationService } from '../authorizationService/authorizationService'
 
 class UsersService implements IUsersService {
   private static instance: UsersService
@@ -48,10 +55,15 @@ class UsersService implements IUsersService {
     }
   }
 
-  async getByEmail(email: string): Promise<Users | null> {
+  async getByEmailAndType(
+    params: GetByEmailAndTypeParams
+  ): Promise<Users | null> {
     try {
       const userRef = firestore().collection('users')
-      const query = userRef.where('email', '==', email)
+      const query = userRef
+        .where('email', '==', params.email)
+        .where('is_elderly', '==', params.isElderly)
+
       const snapshot = await query.get()
       if (snapshot.empty) return null
 
@@ -77,8 +89,8 @@ class UsersService implements IUsersService {
       const docSnap = await docRef.get()
 
       if (docSnap.exists) {
-        const data = docSnap.data() as Omit<Users, 'id'>
-        return data ? { ...data, id } : null
+        const userData = docSnap.data() as Omit<Users, 'id'>
+        return userData ? { ...userData, id } : null
       }
 
       return null
@@ -91,17 +103,49 @@ class UsersService implements IUsersService {
     }
   }
 
-  async isElderly(email: string): Promise<boolean> {
+  async delete({ userId }: { userId: string }): Promise<string> {
     try {
-      const user = await this.getByEmail(email)
-      if (user == null) throw new NotFoundException('Usuário não encontrado')
+      const authorizationService = new AuthorizationService(this)
+      const authorization = await authorizationService.get({
+        usersTypeId: userId,
+        usersType: 'user',
+      })
 
-      return user.is_elderly
-    } catch (error) {
-      if (error instanceof FirebaseError && error.code == 'permission-denied') {
-        throw new UnauthorizedException()
-      }
+      if (!authorization)
+        throw new UnauthorizedException('Autorização não encontrada')
+      if (authorization.user.id != userId)
+        throw new UnauthorizedException(
+          'Esse usuário não tem permissão para excluir'
+        )
 
+      await authorizationService.delete({ userId })
+      await firestore().collection('users').doc(authorization.user.id).delete()
+      return authorization.user.id
+    } catch (error: unknown) {
+      if (error instanceof FirebaseError) throw new UnprocessableException()
+      throw error
+    }
+  }
+
+  async deleteElderly({ id, userId }: DeleteElderlyParams): Promise<void> {
+    try {
+      const authorizationService = new AuthorizationService(this)
+      const authorization = await authorizationService.get({
+        usersTypeId: id,
+        usersType: 'elderly',
+      })
+
+      if (!authorization)
+        throw new UnauthorizedException('Idoso não encontrado')
+      if (authorization.user.id != userId)
+        throw new UnauthorizedException(
+          'Esse usuário não tem permissão para excluir esse usuário idoso'
+        )
+
+      await authorizationService.delete({ userId })
+      await firestore().collection('users').doc(id).delete()
+    } catch (error: unknown) {
+      if (error instanceof FirebaseError) throw new UnprocessableException()
       throw error
     }
   }
