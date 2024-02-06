@@ -9,9 +9,16 @@ import {
 } from './iMedicalReminderService'
 import { NotFoundException } from '../../exceptions'
 import { firestore } from 'firebase-admin'
+import cron from 'node-cron'
+import { DateFormat } from '../../utils/dateFormat'
+import { NotificationSkill } from '../../utils/notificationSkill'
+import { AuthService } from '../authService'
 
 class MedicalReminderService implements IMedicalReminderService {
-  constructor(private readonly authorizationService: IAuthorizationService) {}
+  constructor(
+    private readonly authorizationService: IAuthorizationService,
+    private readonly authService: AuthService
+  ) {}
 
   create = async ({
     address,
@@ -42,6 +49,25 @@ class MedicalReminderService implements IMedicalReminderService {
     }
 
     const docRef = await docRefUser.add(dataToSave)
+
+    const dateCron = DateFormat.dateToCron(date)
+    console.log('dateCron create: ', dateCron)
+
+    const task = cron.schedule(
+      dateCron,
+      async () => {
+        console.log('Vai mandar notificação para Alexa [create]')
+        const notificationSkill = new NotificationSkill(this.authService)
+        await notificationSkill.send({
+          carerName: authorization.user.name,
+          elderly: authorization.elderly,
+        })
+        console.log('Parece que deu certo...')
+
+        task.stop()
+      },
+      { name: docRef.id }
+    )
 
     return {
       id: docRef.id,
@@ -132,6 +158,27 @@ class MedicalReminderService implements IMedicalReminderService {
 
     await docSnap.ref.update(dataToUpdate)
 
+    if (dataToUpdate.datetime != null) {
+      const dateCron = DateFormat.dateToCron(dataToUpdate.datetime)
+      console.log('dateCron update: ', dateCron)
+
+      cron.getTasks().get(data.id)?.stop()
+
+      const newTask = cron.schedule(
+        dateCron,
+        async () => {
+          console.log('Vai mandar notificação para Alexa [update]')
+          const notificationSkill = new NotificationSkill(this.authService)
+          await notificationSkill.send({
+            carerName: authorization.user.name,
+            elderly: authorization.elderly,
+          })
+          newTask.stop()
+        },
+        { name: data.id }
+      )
+    }
+
     return {
       id: data.id,
       medic_name: dataToUpdate.medic_name ?? docData?.['medic_name'],
@@ -165,6 +212,8 @@ class MedicalReminderService implements IMedicalReminderService {
     const docData = docSnap.data()
 
     if (!docData) throw new NotFoundException('Consulta não encontrada')
+
+    cron.getTasks().get(id)?.stop()
 
     await docSnap.ref.delete()
     return

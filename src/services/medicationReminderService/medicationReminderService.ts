@@ -73,8 +73,6 @@ class MedicationReminderService implements IMedicationReminderService {
         dose: this.convertDoseToSave(this.cleanDose(data.dose)),
       }
 
-      console.log('create: dataToSave medication reminder: ', dataToSave)
-
       const docRef = await colRef.add(dataToSave)
 
       return {

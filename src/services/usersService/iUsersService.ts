@@ -3,6 +3,7 @@ type Users = {
   name: string
   email: string
   is_elderly: boolean
+  access_token: string | null
   refresh_token: string | null
 }
 

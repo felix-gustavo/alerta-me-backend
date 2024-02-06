@@ -35,6 +35,7 @@ class AuthService {
           name: decodedToken['name'] ?? '',
           email: decodedToken.email ?? '',
           is_elderly: false,
+          access_token: null,
           refresh_token: null,
         })
       }
@@ -88,12 +89,26 @@ class AuthService {
         name,
         email,
         is_elderly: true,
+        access_token: accessToken,
         refresh_token: refreshToken,
       })
       return tokenResponse.data
     } catch (error) {
+      console.log('error signInElderly: ', error)
       throw new UnprocessableException()
     }
+  }
+
+  async refreshToken(refreshToken: string): Promise<TokenResponse> {
+    const clientId = process.env.CLIENTE_ID
+    const clientSecret = process.env.CLIENTE_SECRET
+
+    const response = await axios.post(
+      `https://api.amazon.com/auth/o2/token?grant_type=refresh_token&refresh_token=${refreshToken}&client_id=${clientId}&client_secret=${clientSecret}`,
+      null
+    )
+
+    return response.data
   }
 }
 

@@ -111,16 +111,10 @@ class UsersService implements IUsersService {
         usersType: 'user',
       })
 
-      if (!authorization)
-        throw new UnauthorizedException('Autorização não encontrada')
-      if (authorization.user.id != userId)
-        throw new UnauthorizedException(
-          'Esse usuário não tem permissão para excluir'
-        )
+      if (authorization) await authorizationService.delete({ userId })
 
-      await authorizationService.delete({ userId })
-      await firestore().collection('users').doc(authorization.user.id).delete()
-      return authorization.user.id
+      await firestore().collection('users').doc(userId).delete()
+      return userId
     } catch (error: unknown) {
       if (error instanceof FirebaseError) throw new UnprocessableException()
       throw error
@@ -135,15 +129,15 @@ class UsersService implements IUsersService {
         usersType: 'elderly',
       })
 
-      if (!authorization)
-        throw new UnauthorizedException('Idoso não encontrado')
-      if (authorization.user.id != userId)
+      if (authorization?.user.id != userId)
         throw new UnauthorizedException(
           'Esse usuário não tem permissão para excluir esse usuário idoso'
         )
 
       await authorizationService.delete({ userId })
-      await firestore().collection('users').doc(id).delete()
+
+      const docRef = firestore().collection('users').doc(id)
+      await firestore().recursiveDelete(docRef)
     } catch (error: unknown) {
       if (error instanceof FirebaseError) throw new UnprocessableException()
       throw error
