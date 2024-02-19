@@ -46,6 +46,7 @@ class UsersController {
     const userId = req.user?.user_id
     if (!userId) throw new WithoutTokenException()
 
+    console.log('proactiveSubAccepted req.body: ', req.body)
     const data: { ask_user_id: string } = req.body
 
     await this.userService.update({

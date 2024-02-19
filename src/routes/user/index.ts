@@ -69,7 +69,11 @@ class UserRoute {
 
     userRoute.put(
       '/proactiveSubAccepted',
-      [body('ask_user_id').isString().withMessage('Campo id deve ser String')],
+      [
+        body('ask_user_id')
+          .isString()
+          .withMessage('Campo ask_user_id deve ser String'),
+      ],
       handleValidationErrors,
       decodeAmazonTokenMiddleware,
       this.controller.proactiveSubAccepted

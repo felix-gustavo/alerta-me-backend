@@ -40,6 +40,8 @@ class AuthController {
   }
 
   refreshTokenNull = async (req: CustomRequest, res: Response) => {
+    console.log('req.user: ', req.user)
+
     return res.json(
       await this.authService.refreshTokenNull(req.user?.user_id ?? '')
     )

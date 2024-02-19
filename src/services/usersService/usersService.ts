@@ -130,7 +130,7 @@ class UsersService implements IUsersService {
       }
 
       for (const key in dataToUpdate) {
-        if (dataToUpdate[key as keyof typeof dataToUpdate] === null) {
+        if (dataToUpdate[key as keyof typeof dataToUpdate] === undefined) {
           delete dataToUpdate[key as keyof typeof dataToUpdate]
         }
       }
@@ -139,6 +139,7 @@ class UsersService implements IUsersService {
 
       return data.id
     } catch (error: unknown) {
+      console.log('error: ', error)
       if (error instanceof FirebaseError) throw new UnprocessableException()
       throw error
     }
