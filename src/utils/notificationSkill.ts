@@ -1,51 +1,51 @@
 import axios, { AxiosError } from 'axios'
-import qs from 'qs'
-import { AuthService } from '../services/authService'
 import { Users } from '../services/usersService/iUsersService'
+import { addMinutes } from 'date-fns'
 
 type NotificationSkillSendParams = {
   carerName: string
   elderly: Users
 }
 
-/**
- * 
-POST /v1/proactiveEvents/stages/development
-Host: api.amazonalexa.com
-Content-Type: application/json
-Authorization: Bearer {access token}
- */
+type TokenScope = {
+  access_token: string
+  scope: string
+  token_type: string
+  expires_in: number
+}
+
 class NotificationSkill {
   private retry = true
-  constructor(private readonly authService: AuthService) {}
 
   async send(data: NotificationSkillSendParams) {
     try {
-      // const clientId = process.env.CLIENTE_ID
-      // const clientSecret = process.env.CLIENTE_SECRET
+      const clientId = process.env.ASK_CLIENTE_ID
+      const clientSecret = process.env.ASK_CLIENTE_SECRET
 
-      // const optionsToken = {
-      //   method: 'POST',
-      //   headers: { 'content-type': 'application/x-www-form-urlencoded' },
-      //   data: qs.stringify({
-      //     grant_type: 'client_credentials',
-      //     client_id: clientId,
-      //     client_secret: clientSecret,
-      //     scope: 'alexa::proactive_events',
-      //   }),
-      //   url: 'https://api.amazon.com/auth/o2/token',
-      // }
-
-      // const tokens = await axios(optionsToken)
-      // console.log('tokens: ', tokens)
-
+      const tokens: TokenScope = (
+        await axios.post(
+          'https://api.amazon.com/auth/o2/token',
+          {
+            scope: 'alexa::proactive_events',
+            grant_type: 'client_credentials',
+            client_id: clientId,
+            client_secret: clientSecret,
+          },
+          {
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+          }
+        )
+      ).data
       const timestamp = new Date()
       const response = await axios.post(
         'https://api.amazonalexa.com/v1/proactiveEvents/stages/development',
+        // 'https://api.amazonalexa.com/v1/proactiveEvents',
         {
           timestamp: timestamp.toISOString(),
-          referenceId: `${data.elderly.id}${timestamp.getTime()}`,
-          expiryTime: timestamp.toISOString(),
+          referenceId: `${data.elderly.id}-${timestamp.getTime()}`,
+          expiryTime: addMinutes(timestamp, 10).toISOString(),
           event: {
             name: 'AMAZON.MessageAlert.Activated',
             payload: {
@@ -65,24 +65,24 @@ class NotificationSkill {
               locale: 'pt-BR',
             },
           ],
+          relevantAudience: {
+            type: 'Unicast',
+            payload: { user: data.elderly.ask_user_id },
+          },
           // relevantAudience: {
           //   type: 'Multicast',
           //   payload: {},
           // },
-          relevantAudience: {
-            type: 'Unicast',
-            payload: { user: data.elderly.id },
-          },
         },
         {
           headers: {
-            Authorization: `Bearer ${data.elderly.access_token}`,
+            Authorization: `Bearer ${tokens.access_token}`,
             'Content-Type': 'application/json',
           },
         }
       )
 
-      console.log('response: ', response.data)
+      console.log('response: ', response)
     } catch (error) {
       console.log('error: ', error)
       if (
@@ -90,16 +90,10 @@ class NotificationSkill {
         error.response?.status === 403 &&
         this.retry
       ) {
-        const newTokens = await this.authService.refreshToken(
-          data.elderly.refresh_token ?? ''
-        )
         this.retry = false
         await this.send({
           carerName: data.carerName,
-          elderly: {
-            ...data.elderly,
-            access_token: newTokens.access_token,
-          },
+          elderly: data.elderly,
         })
       }
     }

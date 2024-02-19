@@ -13,7 +13,7 @@ class MedicationReminderController {
   create = async (req: CustomRequest, res: Response) => {
     const data: Omit<CreateMedicationReminderParams, 'userId'> = req.body
 
-    const userId = req.user?.id
+    const userId = req.user?.user_id
     if (!userId) throw new WithoutTokenException()
 
     const response = await this.service.create({
@@ -25,7 +25,7 @@ class MedicationReminderController {
   }
 
   get = async (req: CustomRequest, res: Response) => {
-    const userId = req.user?.id
+    const userId = req.user?.user_id
     if (!userId) throw new WithoutTokenException()
 
     const response = await this.service.get({ userId })
@@ -36,7 +36,7 @@ class MedicationReminderController {
   update = async (req: CustomRequest, res: Response) => {
     const id = req.params.id as string
 
-    const userId = req.user?.id
+    const userId = req.user?.user_id
     if (!userId) throw new WithoutTokenException()
 
     const data: Omit<UpdateMedicationReminderParams, 'userId' | 'id'> = req.body
@@ -53,7 +53,7 @@ class MedicationReminderController {
   delete = async (req: CustomRequest, res: Response) => {
     const id = req.params.id as string
 
-    const userId = req.user?.id
+    const userId = req.user?.user_id
     if (!userId) throw new WithoutTokenException()
 
     await this.service.delete({ id, userId })

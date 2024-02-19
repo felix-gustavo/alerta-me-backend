@@ -13,7 +13,7 @@ class WaterReminderController {
   create = async (req: CustomRequest, res: Response) => {
     const data: Omit<CreateWaterReminderParams, 'userId'> = req.body
 
-    const userId = req.user?.id
+    const userId = req.user?.user_id
     if (!userId) throw new WithoutTokenException()
 
     const response = await this.waterReminderService.create({
@@ -25,7 +25,7 @@ class WaterReminderController {
   }
 
   get = async (req: CustomRequest, res: Response) => {
-    const userId = req.user?.id
+    const userId = req.user?.user_id
     if (!userId) throw new WithoutTokenException()
 
     const response = await this.waterReminderService.get({ userId })
@@ -34,7 +34,7 @@ class WaterReminderController {
   }
 
   update = async (req: CustomRequest, res: Response) => {
-    const userId = req.user?.id
+    const userId = req.user?.user_id
     if (!userId) throw new WithoutTokenException()
 
     const data: Omit<UpdateWaterReminderParams, 'userId'> = req.body

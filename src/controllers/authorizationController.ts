@@ -9,7 +9,7 @@ class AuthorizationController {
   create = async (req: CustomRequest, res: Response) => {
     const { elderly }: { elderly: string } = req.body
 
-    const userId = req.user?.id
+    const userId = req.user?.user_id
     if (!userId) throw new UnauthorizedException()
 
     const response = await this.authorizationService.create({
@@ -20,7 +20,7 @@ class AuthorizationController {
   }
 
   getAuthorizationByUser = async (req: CustomRequest, res: Response) => {
-    const userId = req.user?.id
+    const userId = req.user?.user_id
     if (!userId) throw new UnauthorizedException()
 
     const response = await this.authorizationService.get({
@@ -32,7 +32,7 @@ class AuthorizationController {
   }
 
   getAuthorizationByElderly = async (req: CustomRequest, res: Response) => {
-    const userId = req.user?.id
+    const userId = req.user?.user_id
     if (!userId) throw new UnauthorizedException()
 
     const response = await this.authorizationService.get({
@@ -46,7 +46,7 @@ class AuthorizationController {
   approvedAuthorizationElderly = async (req: CustomRequest, res: Response) => {
     const { id }: { id: string } = req.body
 
-    const userId = req.user?.id
+    const userId = req.user?.user_id
     if (!userId) throw new UnauthorizedException()
 
     await this.authorizationService.updateStatus({
@@ -60,7 +60,7 @@ class AuthorizationController {
   }
 
   deleteAuthorization = async (req: CustomRequest, res: Response) => {
-    const userId = req.user?.id
+    const userId = req.user?.user_id
     if (!userId) throw new UnauthorizedException()
 
     const id = await this.authorizationService.delete({ userId })

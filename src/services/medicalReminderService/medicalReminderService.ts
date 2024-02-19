@@ -57,7 +57,7 @@ class MedicalReminderService implements IMedicalReminderService {
       dateCron,
       async () => {
         console.log('Vai mandar notificação para Alexa [create]')
-        const notificationSkill = new NotificationSkill(this.authService)
+        const notificationSkill = new NotificationSkill()
         await notificationSkill.send({
           carerName: authorization.user.name,
           elderly: authorization.elderly,
@@ -168,11 +168,12 @@ class MedicalReminderService implements IMedicalReminderService {
         dateCron,
         async () => {
           console.log('Vai mandar notificação para Alexa [update]')
-          const notificationSkill = new NotificationSkill(this.authService)
+          const notificationSkill = new NotificationSkill()
           await notificationSkill.send({
             carerName: authorization.user.name,
             elderly: authorization.elderly,
           })
+          console.log('Notificação enviada...')
           newTask.stop()
         },
         { name: data.id }

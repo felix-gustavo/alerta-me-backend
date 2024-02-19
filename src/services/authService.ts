@@ -37,6 +37,7 @@ class AuthService {
           is_elderly: false,
           access_token: null,
           refresh_token: null,
+          ask_user_id: null,
         })
       }
 
@@ -84,6 +85,8 @@ class AuthService {
 
       const { email, name, user_id } = profileResponse.data
 
+      console.log('user_id: ', user_id)
+
       await this.usersService.create({
         id: user_id,
         name,
@@ -91,6 +94,7 @@ class AuthService {
         is_elderly: true,
         access_token: accessToken,
         refresh_token: refreshToken,
+        ask_user_id: null,
       })
       return tokenResponse.data
     } catch (error) {
@@ -100,8 +104,8 @@ class AuthService {
   }
 
   async refreshToken(refreshToken: string): Promise<TokenResponse> {
-    const clientId = process.env.CLIENTE_ID
-    const clientSecret = process.env.CLIENTE_SECRET
+    const clientId = process.env.LWA_CLIENTE_ID
+    const clientSecret = process.env.LWA_CLIENTE_SECRET
 
     const response = await axios.post(
       `https://api.amazon.com/auth/o2/token?grant_type=refresh_token&refresh_token=${refreshToken}&client_id=${clientId}&client_secret=${clientSecret}`,
@@ -109,6 +113,14 @@ class AuthService {
     )
 
     return response.data
+  }
+
+  async refreshTokenNull(userId: string): Promise<void> {
+    await this.usersService.update({
+      id: userId,
+      refresh_token: null,
+      usersType: 'elderly',
+    })
   }
 }
 

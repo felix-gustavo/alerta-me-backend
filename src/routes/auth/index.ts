@@ -3,6 +3,7 @@ import { AuthController } from '../../controllers/authController'
 import { createAuthValidateScheme } from '../../validations/schemes/createAuthValidate'
 import { handleValidationErrors } from '../../validations/handleValidationErrors'
 import { refreshTokenValidateScheme } from '../../validations/schemes/refreshTokenValidate'
+import { decodeAmazonTokenMiddleware } from '../../middlewares/decodeTokenMiddleware'
 
 class AuthRoute {
   constructor(private readonly controller: AuthController) {}
@@ -22,6 +23,11 @@ class AuthRoute {
       refreshTokenValidateScheme,
       handleValidationErrors,
       this.controller.refreshToken
+    )
+    authRoute.post(
+      '/refresh-token-null',
+      decodeAmazonTokenMiddleware,
+      this.controller.refreshTokenNull
     )
 
     return authRoute

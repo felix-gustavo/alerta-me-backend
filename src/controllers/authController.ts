@@ -1,6 +1,6 @@
 import { Response, Request } from 'express'
 import { AuthService } from '../services/authService'
-import axios from 'axios'
+import { CustomRequest } from '../middlewares/decodeTokenMiddleware'
 
 class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -12,6 +12,7 @@ class AuthController {
   }
 
   signInElderly = async (req: Request, res: Response) => {
+    console.log('req.body: ', req.body)
     const redirectUri = req.body.redirect_uri
     const clientId = req.body.client_id
     const code = req.body.code
@@ -36,6 +37,12 @@ class AuthController {
   refreshToken = async (req: Request, res: Response) => {
     const refreshToken = req.body.refreshToken
     return res.json(await this.authService.refreshToken(refreshToken))
+  }
+
+  refreshTokenNull = async (req: CustomRequest, res: Response) => {
+    return res.json(
+      await this.authService.refreshTokenNull(req.user?.user_id ?? '')
+    )
   }
 }
 

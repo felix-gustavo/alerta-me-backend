@@ -7,20 +7,11 @@ import {
 import { UsersService } from '../services/usersService/usersService'
 import { FirebaseError } from '@firebase/util'
 import { auth } from 'firebase-admin'
-import { Users } from '../services/usersService/iUsersService'
+import { UserProfile, Users } from '../services/usersService/iUsersService'
 import axios, { AxiosError } from 'axios'
 
-const getEmailByToken = async (accessToken: string) => {
-  const profileResponse = await axios.get(
-    'https://api.amazon.com/user/profile',
-    { params: { access_token: accessToken } }
-  )
-
-  return profileResponse.data.email
-}
-
 interface CustomRequest extends Request {
-  user?: Users
+  user?: UserProfile
 }
 
 const decodeAmazonTokenMiddleware = async (
@@ -34,17 +25,13 @@ const decodeAmazonTokenMiddleware = async (
       throw new WithoutTokenException()
 
     const token = authorizationHeader.split('Bearer ')[1]
-    const email = await getEmailByToken(token)
+    const userData = (
+      await axios.get('https://api.amazon.com/user/profile', {
+        params: { access_token: token },
+      })
+    ).data as UserProfile
 
-    const userService = UsersService.getInstance()
-
-    const user = await userService.getByEmailAndType({
-      email: email ?? '',
-      isElderly: true,
-    })
-    if (!user) throw new UnauthorizedException('Usuário não encontrado')
-
-    req.user = user
+    req.user = userData
     next()
   } catch (error: unknown) {
     if ((error as AxiosError).response?.status === 400)
@@ -76,7 +63,11 @@ const decodeFirebaseTokenMiddleware = async (
     })
     if (!user) throw new UnauthorizedException('Usuário não encontrado')
 
-    req.user = user
+    req.user = {
+      user_id: user.id,
+      email: user.email,
+      name: user.name,
+    }
     next()
   } catch (error: unknown) {
     switch ((error as FirebaseError)?.code) {

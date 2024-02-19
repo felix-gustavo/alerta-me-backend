@@ -4,7 +4,7 @@ import {
   IUsersService,
 } from '../services/usersService/iUsersService'
 import { CustomRequest } from '../middlewares/decodeTokenMiddleware'
-import { UnauthorizedException } from '../exceptions'
+import { UnauthorizedException, WithoutTokenException } from '../exceptions'
 
 class UsersController {
   constructor(private readonly userService: IUsersService) {}
@@ -19,6 +19,8 @@ class UsersController {
         email: data.email,
         is_elderly: data.is_elderly,
         refresh_token: data.refresh_token ?? null,
+        access_token: data.access_token ?? null,
+        ask_user_id: null,
       })
     )
   }
@@ -40,8 +42,36 @@ class UsersController {
     )
   }
 
+  proactiveSubAccepted = async (req: CustomRequest, res: Response) => {
+    const userId = req.user?.user_id
+    if (!userId) throw new WithoutTokenException()
+
+    const data: { ask_user_id: string } = req.body
+
+    await this.userService.update({
+      id: userId,
+      usersType: 'elderly',
+      ask_user_id: data.ask_user_id,
+    })
+
+    res.json({ userId })
+  }
+
+  proactiveSubDisabled = async (req: CustomRequest, res: Response) => {
+    const userId = req.user?.user_id
+    if (!userId) throw new WithoutTokenException()
+
+    await this.userService.update({
+      id: userId,
+      usersType: 'elderly',
+      ask_user_id: null,
+    })
+
+    res.json({ userId })
+  }
+
   delete = async (req: CustomRequest, res: Response) => {
-    const userId = req.user?.id
+    const userId = req.user?.user_id
     if (!userId) throw new UnauthorizedException()
 
     const id = await this.userService.delete({ userId })
@@ -51,7 +81,7 @@ class UsersController {
   deleteElderly = async (req: CustomRequest, res: Response) => {
     const { id }: { id: string } = req.body
 
-    const userId = req.user?.id
+    const userId = req.user?.user_id
     if (!userId) throw new UnauthorizedException()
 
     await this.userService.deleteElderly({ id, userId })

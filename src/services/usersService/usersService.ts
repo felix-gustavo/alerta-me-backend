@@ -1,6 +1,7 @@
 import { firestore } from 'firebase-admin'
 import { FirebaseError } from '@firebase/util'
 import {
+  NotFoundException,
   UnauthorizedException,
   UnprocessableException,
   UserCreationException,
@@ -10,6 +11,7 @@ import {
   DeleteElderlyParams,
   GetByEmailAndTypeParams,
   IUsersService,
+  UpdateParams,
   Users,
 } from './iUsersService'
 import { AuthorizationService } from '../authorizationService/authorizationService'
@@ -99,6 +101,45 @@ class UsersService implements IUsersService {
         throw new UnauthorizedException()
       }
 
+      throw error
+    }
+  }
+
+  async update(data: UpdateParams): Promise<string> {
+    try {
+      const authorizationService = new AuthorizationService(this)
+      const authorization = await authorizationService.get({
+        usersTypeId: data.id,
+        usersType: data.usersType,
+      })
+
+      if (!authorization)
+        throw new NotFoundException('Autorização não encontrada')
+
+      const docSnap = await firestore().collection('users').doc(data.id).get()
+      const docData = docSnap.data()
+
+      if (!docData) throw new NotFoundException('Usuário não encontrado')
+
+      const dataToUpdate = {
+        name: data.name,
+        email: data.email,
+        is_elderly: data.is_elderly,
+        access_token: data.access_token,
+        refresh_token: data.refresh_token,
+      }
+
+      for (const key in dataToUpdate) {
+        if (dataToUpdate[key as keyof typeof dataToUpdate] === null) {
+          delete dataToUpdate[key as keyof typeof dataToUpdate]
+        }
+      }
+
+      await docSnap.ref.update(dataToUpdate)
+
+      return data.id
+    } catch (error: unknown) {
+      if (error instanceof FirebaseError) throw new UnprocessableException()
       throw error
     }
   }

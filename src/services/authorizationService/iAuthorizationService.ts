@@ -1,11 +1,9 @@
-import { Users } from '../usersService/iUsersService'
+import { Users, UsersType } from '../usersService/iUsersService'
 
 interface CreateAuthorizationParams {
   elderlyEmail: string
   userId: string
 }
-
-type UsersType = 'user' | 'elderly'
 
 interface GetAuthorizationParams {
   usersTypeId: string
