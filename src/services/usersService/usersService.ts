@@ -127,6 +127,7 @@ class UsersService implements IUsersService {
         is_elderly: data.is_elderly,
         access_token: data.access_token,
         refresh_token: data.refresh_token,
+        ask_user_id: data.ask_user_id,
       }
 
       for (const key in dataToUpdate) {
