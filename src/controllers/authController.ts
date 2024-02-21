@@ -1,6 +1,5 @@
 import { Response, Request } from 'express'
 import { AuthService } from '../services/authService'
-import { CustomRequest } from '../middlewares/decodeTokenMiddleware'
 
 class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -37,14 +36,6 @@ class AuthController {
   refreshToken = async (req: Request, res: Response) => {
     const refreshToken = req.body.refreshToken
     return res.json(await this.authService.refreshToken(refreshToken))
-  }
-
-  refreshTokenNull = async (req: CustomRequest, res: Response) => {
-    console.log('req.user: ', req.user)
-
-    return res.json(
-      await this.authService.refreshTokenNull(req.user?.user_id ?? '')
-    )
   }
 }
 

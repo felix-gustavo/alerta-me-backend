@@ -114,14 +114,6 @@ class AuthService {
 
     return response.data
   }
-
-  async refreshTokenNull(userId: string): Promise<void> {
-    await this.usersService.update({
-      id: userId,
-      refresh_token: null,
-      usersType: 'elderly',
-    })
-  }
 }
 
 export { AuthService }

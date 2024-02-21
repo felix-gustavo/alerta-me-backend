@@ -25,6 +25,20 @@ class UsersController {
     )
   }
 
+  skillDisabled = async (req: CustomRequest, res: Response) => {
+    console.log('req.user: ', req.user)
+
+    return res.json(
+      await this.userService.update({
+        id: req.user?.user_id ?? '',
+        refresh_token: null,
+        access_token: null,
+        ask_user_id: null,
+        usersType: 'elderly',
+      })
+    )
+  }
+
   getById = async (req: Request, res: Response) => {
     const id = req.params.id as string
     res.json(await this.userService.getById(id))
