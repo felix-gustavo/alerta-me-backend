@@ -12,11 +12,20 @@ type Users = {
   access_token: string | null
   refresh_token: string | null
   ask_user_id: string | null
+  permission_notification: boolean
 }
 
 type UsersType = 'user' | 'elderly'
 
-type CreateUsers = Omit<Users, 'id'> & { id?: string }
+type CreateUsers = Omit<
+  Omit<Users, 'ask_user_id' | 'permission_notification'> & {
+    ask_user_id?: string | null
+    permission_notification?: boolean
+  },
+  'id'
+> & {
+  id?: string
+}
 
 type UpdateParams = Partial<Users> & {
   id: string
@@ -32,6 +41,13 @@ type GetByEmailAndTypeParams = {
   email: string
   isElderly: boolean
 }
+
+type NotificationsUser = {
+  id: string
+  type: 'medical_reminder' | 'medication_reminder' | 'water_reminder'
+  message: string
+}
+
 interface IUsersService {
   create(data: CreateUsers): Promise<Users>
   getById(id: string): Promise<Users | null>
@@ -53,4 +69,5 @@ export {
   UpdateParams,
   DeleteElderlyParams,
   GetByEmailAndTypeParams,
+  NotificationsUser,
 }

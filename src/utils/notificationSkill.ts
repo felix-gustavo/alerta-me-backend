@@ -41,20 +41,19 @@ class NotificationSkill {
       const timestamp = new Date()
       const response = await axios.post(
         'https://api.amazonalexa.com/v1/proactiveEvents/stages/development',
-        // 'https://api.amazonalexa.com/v1/proactiveEvents',
         {
           timestamp: timestamp.toISOString(),
           referenceId: `${data.elderly.id}-${timestamp.getTime()}`,
-          expiryTime: addMinutes(timestamp, 10).toISOString(),
+          expiryTime: addMinutes(timestamp, 15).toISOString(),
           event: {
             name: 'AMAZON.MessageAlert.Activated',
             payload: {
-              state: {
-                status: 'UNREAD',
-              },
+              state: { status: 'UNREAD' },
               messageGroup: {
                 creator: {
-                  name: data.carerName,
+                  name: `${
+                    data.carerName.split(' ')[0]
+                  }. Para mais detalhes sobre o lembrete, diga Alexa, abra alerta me`,
                 },
                 count: 1,
               },
@@ -69,10 +68,6 @@ class NotificationSkill {
             type: 'Unicast',
             payload: { user: data.elderly.ask_user_id },
           },
-          // relevantAudience: {
-          //   type: 'Multicast',
-          //   payload: {},
-          // },
         },
         {
           headers: {

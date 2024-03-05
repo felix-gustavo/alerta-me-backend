@@ -94,7 +94,6 @@ class AuthService {
         is_elderly: true,
         access_token: accessToken,
         refresh_token: refreshToken,
-        ask_user_id: null,
       })
       return tokenResponse.data
     } catch (error) {

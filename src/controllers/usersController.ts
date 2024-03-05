@@ -20,7 +20,8 @@ class UsersController {
         is_elderly: data.is_elderly,
         refresh_token: data.refresh_token ?? null,
         access_token: data.access_token ?? null,
-        ask_user_id: null,
+        ask_user_id: data.ask_user_id ?? null,
+        permission_notification: data.permission_notification ?? false,
       })
     )
   }
@@ -34,6 +35,7 @@ class UsersController {
         refresh_token: null,
         access_token: null,
         ask_user_id: null,
+        permission_notification: false,
         usersType: 'elderly',
       })
     )
@@ -56,17 +58,27 @@ class UsersController {
     )
   }
 
-  proactiveSubAccepted = async (req: CustomRequest, res: Response) => {
+  accountLinked = async (req: CustomRequest, res: Response) => {
     const userId = req.user?.user_id
     if (!userId) throw new WithoutTokenException()
-
-    console.log('proactiveSubAccepted req.body: ', req.body)
-    const data: { ask_user_id: string } = req.body
 
     await this.userService.update({
       id: userId,
       usersType: 'elderly',
-      ask_user_id: data.ask_user_id,
+      ask_user_id: req.body.ask_user_id,
+    })
+
+    res.json({ userId })
+  }
+
+  proactiveSubAccepted = async (req: CustomRequest, res: Response) => {
+    const userId = req.user?.user_id
+    if (!userId) throw new WithoutTokenException()
+
+    await this.userService.update({
+      id: userId,
+      usersType: 'elderly',
+      permission_notification: true,
     })
 
     res.json({ userId })
@@ -79,7 +91,7 @@ class UsersController {
     await this.userService.update({
       id: userId,
       usersType: 'elderly',
-      ask_user_id: null,
+      permission_notification: false,
     })
 
     res.json({ userId })

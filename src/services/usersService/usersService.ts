@@ -32,25 +32,24 @@ class UsersService implements IUsersService {
       const id = data.id
       delete data.id
       if (id) {
+        if (data.ask_user_id === undefined) delete data.ask_user_id
         await usersCollection.doc(id).set(data)
-        return {
-          ...data,
-          id,
+        const userData = await usersCollection.doc(id).get()
+        return userData.data() as Users
+      }
+
+      const filteredData = { ...data }
+
+      for (const key in filteredData) {
+        if (filteredData[key as keyof typeof filteredData] === undefined) {
+          delete filteredData[key as keyof typeof filteredData]
         }
       }
 
-      const filteredData = Object.fromEntries(
-        Object.entries(data).map(([key, value]) => [
-          key,
-          value === undefined ? null : value,
-        ])
-      )
-
       const docRef = await usersCollection.add(filteredData)
-      return {
-        ...data,
-        id: docRef.id,
-      }
+      const userData = await docRef.get()
+
+      return userData.data() as Users
     } catch (error: unknown) {
       if (error instanceof FirebaseError) throw new UserCreationException()
       throw error
@@ -128,6 +127,7 @@ class UsersService implements IUsersService {
         access_token: data.access_token,
         refresh_token: data.refresh_token,
         ask_user_id: data.ask_user_id,
+        permission_notification: data.permission_notification,
       }
 
       for (const key in dataToUpdate) {

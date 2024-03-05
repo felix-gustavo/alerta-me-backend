@@ -1,4 +1,7 @@
-import { IAuthorizationService } from '../authorizationService/iAuthorizationService'
+import {
+  Authorization,
+  IAuthorizationService,
+} from '../authorizationService/iAuthorizationService'
 import {
   CreateMedicalReminderParams,
   DeleteMedicalReminderParams,
@@ -13,6 +16,7 @@ import cron from 'node-cron'
 import { DateFormat } from '../../utils/dateFormat'
 import { NotificationSkill } from '../../utils/notificationSkill'
 import { AuthService } from '../authService'
+import { NotificationsUser } from '../usersService/iUsersService'
 
 class MedicalReminderService implements IMedicalReminderService {
   constructor(
@@ -49,28 +53,25 @@ class MedicalReminderService implements IMedicalReminderService {
     }
 
     const docRef = await docRefUser.add(dataToSave)
+    const { id: medicalReminderId } = docRef
 
-    const dateCron = DateFormat.dateToCron(date)
-    console.log('dateCron create: ', dateCron)
-
-    const task = cron.schedule(
-      dateCron,
-      async () => {
-        console.log('Vai mandar notificação para Alexa [create]')
-        const notificationSkill = new NotificationSkill()
-        await notificationSkill.send({
-          carerName: authorization.user.name,
-          elderly: authorization.elderly,
-        })
-        console.log('Parece que deu certo...')
-
-        task.stop()
+    this.sendNotification({
+      authorization: authorization,
+      date,
+      medicalReminderId,
+      medicName: medic_name.split(' ')[0],
+      sendDataToFirestore: async (notificationUser: NotificationsUser) => {
+        await firestore()
+          .collection('users')
+          .doc(authorization.elderly.id)
+          .update({
+            notifications: firestore.FieldValue.arrayUnion(notificationUser),
+          })
       },
-      { name: docRef.id }
-    )
+    })
 
     return {
-      id: docRef.id,
+      id: medicalReminderId,
       address: dataToSave.address,
       medic_name: dataToSave.medic_name,
       specialty: dataToSave.specialty,
@@ -121,7 +122,7 @@ class MedicalReminderService implements IMedicalReminderService {
   update = async (
     data: UpdateMedicalReminderParams
   ): Promise<MedicalReminder> => {
-    const date = data.date ? new Date(data.date) : null
+    const datetime = data.date ? new Date(data.date) : null
     const medic_name = data.medic_name ?? null
     const specialty = data.specialty ?? null
     const address = data.address ?? null
@@ -146,7 +147,7 @@ class MedicalReminderService implements IMedicalReminderService {
     const dataToUpdate = {
       medic_name,
       specialty,
-      datetime: date,
+      datetime,
       address,
     }
 
@@ -158,33 +159,48 @@ class MedicalReminderService implements IMedicalReminderService {
 
     await docSnap.ref.update(dataToUpdate)
 
-    if (dataToUpdate.datetime != null) {
-      const dateCron = DateFormat.dateToCron(dataToUpdate.datetime)
-      console.log('dateCron update: ', dateCron)
+    const date = dataToUpdate.datetime
 
+    if (date != null) {
       cron.getTasks().get(data.id)?.stop()
 
-      const newTask = cron.schedule(
-        dateCron,
-        async () => {
-          console.log('Vai mandar notificação para Alexa [update]')
-          const notificationSkill = new NotificationSkill()
-          await notificationSkill.send({
-            carerName: authorization.user.name,
-            elderly: authorization.elderly,
-          })
-          console.log('Notificação enviada...')
-          newTask.stop()
+      const fullMedicName = dataToUpdate.medic_name ?? docData['medic_name']
+      this.sendNotification({
+        authorization,
+        date,
+        medicalReminderId: data.id,
+        medicName: fullMedicName.split(' ')[0],
+        sendDataToFirestore: async (notificationUser: NotificationsUser) => {
+          const userRef = firestore()
+            .collection('users')
+            .doc(authorization.elderly.id)
+
+          await firestore().runTransaction(
+            async (transaction: firestore.Transaction) => {
+              const doc = await transaction.get(userRef)
+              const notifications: NotificationsUser[] =
+                doc.data()?.notifications ?? []
+
+              console.log('notifications: ', JSON.stringify(notifications))
+
+              const index = notifications.findIndex((e) => e.id === data.id)
+              if (index != -1) {
+                delete notifications[index]
+                notifications.splice(index, 0, notificationUser)
+              } else notifications.push(notificationUser)
+
+              return transaction.update(userRef, { notifications })
+            }
+          )
         },
-        { name: data.id }
-      )
+      })
     }
 
     return {
       id: data.id,
-      medic_name: dataToUpdate.medic_name ?? docData?.['medic_name'],
-      specialty: dataToUpdate.specialty ?? docData?.['specialty'],
-      address: dataToUpdate.address ?? docData?.['address'],
+      medic_name: dataToUpdate.medic_name ?? docData['medic_name'],
+      specialty: dataToUpdate.specialty ?? docData['specialty'],
+      address: dataToUpdate.address ?? docData['address'],
       date:
         dataToUpdate.datetime ??
         (docData?.['datetime'] as firestore.Timestamp).toDate().toISOString(),
@@ -218,6 +234,46 @@ class MedicalReminderService implements IMedicalReminderService {
 
     await docSnap.ref.delete()
     return
+  }
+
+  private sendNotification({
+    date,
+    authorization,
+    medicalReminderId,
+    medicName,
+    sendDataToFirestore,
+  }: {
+    date: Date
+    authorization: Authorization
+    medicName: string
+    medicalReminderId: string
+    sendDataToFirestore: (notificationUser: NotificationsUser) => Promise<void>
+  }) {
+    if (Date.now() >= date.getTime()) return
+    const dateCron = DateFormat.dateToCron(date)
+    console.log('dateCron create: ', dateCron)
+
+    const task = cron.schedule(
+      dateCron,
+      async () => {
+        const notificationSkill = new NotificationSkill()
+        await notificationSkill.send({
+          carerName: authorization.user.name,
+          elderly: authorization.elderly,
+        })
+
+        const notificationUser: NotificationsUser = {
+          id: medicalReminderId,
+          type: 'medical_reminder',
+          message: `Você tem uma consulta agendada com ${medicName} as ${date.getHours()}:${date.getMinutes()}`,
+        }
+
+        await sendDataToFirestore(notificationUser)
+
+        task.stop()
+      },
+      { name: medicalReminderId }
+    )
   }
 }
 
