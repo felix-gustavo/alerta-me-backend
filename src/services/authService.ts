@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axios, { AxiosError } from 'axios'
 import { SessionExpiredException, UnprocessableException } from '../exceptions'
 import { IUsersService, Users } from './usersService/iUsersService'
 import { auth } from 'firebase-admin'
@@ -97,7 +97,18 @@ class AuthService {
       })
       return tokenResponse.data
     } catch (error) {
-      console.log('error signInElderly: ', error)
+      console.log(
+        'error response headers: ',
+        JSON.stringify((error as AxiosError).response?.headers)
+      )
+      console.log(
+        'error response config.url: ',
+        JSON.stringify((error as AxiosError).response?.config.url)
+      )
+      console.log(
+        'error response data: ',
+        JSON.stringify((error as AxiosError).response?.data)
+      )
       throw new UnprocessableException()
     }
   }

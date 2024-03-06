@@ -19,10 +19,7 @@ import { AuthService } from '../authService'
 import { NotificationsUser } from '../usersService/iUsersService'
 
 class MedicalReminderService implements IMedicalReminderService {
-  constructor(
-    private readonly authorizationService: IAuthorizationService,
-    private readonly authService: AuthService
-  ) {}
+  constructor(private readonly authorizationService: IAuthorizationService) {}
 
   create = async ({
     address,

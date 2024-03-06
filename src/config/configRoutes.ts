@@ -28,8 +28,7 @@ const setup = (app: Express) => {
   const authorizationService = new AuthorizationService(usersService)
   const waterReminderService = new WaterReminderService(authorizationService)
   const medicalReminderService = new MedicalReminderService(
-    authorizationService,
-    authService
+    authorizationService
   )
   const medicationReminderService = new MedicationReminderService(
     authorizationService

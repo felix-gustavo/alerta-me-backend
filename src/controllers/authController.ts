@@ -11,7 +11,7 @@ class AuthController {
   }
 
   signInElderly = async (req: Request, res: Response) => {
-    console.log('req.body: ', req.body)
+    console.log('req.body: ', JSON.stringify(req.body))
     const redirectUri = req.body.redirect_uri
     const clientId = req.body.client_id
     const code = req.body.code

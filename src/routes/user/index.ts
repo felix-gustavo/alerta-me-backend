@@ -25,12 +25,6 @@ class UserRoute {
       this.controller.create
     )
 
-    userRoute.post(
-      '/skillDisabled',
-      decodeAmazonTokenMiddleware,
-      this.controller.skillDisabled
-    )
-
     userRoute.get(
       '/id/:id',
       getUserByIdValidateScheme,
