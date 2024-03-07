@@ -9,20 +9,6 @@ const createUserValidateScheme = [
   body('is_elderly')
     .isBoolean()
     .withMessage('Campo is_elderly deve ser um booleano (true, false)'),
-  body('refresh_token')
-    .optional()
-    .isString()
-    .withMessage('Campo refresh_token deve ser String'),
-  body('ask_user_id')
-    .optional()
-    .isString()
-    .withMessage('Campo ask_user_id deve ser String'),
-  body('permission_notification')
-    .optional()
-    .isBoolean()
-    .withMessage(
-      'Campo permissionNotification deve ser um booleano (true, false)'
-    ),
 ]
 
 export { createUserValidateScheme }

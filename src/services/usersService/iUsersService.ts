@@ -9,10 +9,7 @@ type Users = {
   name: string
   email: string
   is_elderly: boolean
-  access_token: string | null
-  refresh_token: string | null
   ask_user_id: string | null
-  permission_notification: boolean
 }
 
 type UsersType = 'user' | 'elderly'
@@ -20,7 +17,6 @@ type UsersType = 'user' | 'elderly'
 type CreateUsers = Omit<
   Omit<Users, 'ask_user_id' | 'permission_notification'> & {
     ask_user_id?: string | null
-    permission_notification?: boolean
   },
   'id'
 > & {

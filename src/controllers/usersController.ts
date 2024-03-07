@@ -18,10 +18,21 @@ class UsersController {
         name: data.name,
         email: data.email,
         is_elderly: data.is_elderly,
-        refresh_token: data.refresh_token ?? null,
-        access_token: data.access_token ?? null,
         ask_user_id: data.ask_user_id ?? null,
-        permission_notification: data.permission_notification ?? false,
+      })
+    )
+  }
+
+  createElderly = async (req: CustomRequest, res: Response) => {
+    const user = req.user
+
+    res.json(
+      await this.userService.create({
+        id: user?.user_id,
+        name: user?.name ?? '',
+        email: user?.email ?? '',
+        is_elderly: true,
+        ask_user_id: null,
       })
     )
   }
@@ -58,12 +69,11 @@ class UsersController {
 
   proactiveSubAccepted = async (req: CustomRequest, res: Response) => {
     const userId = req.user?.user_id
-    if (!userId) throw new WithoutTokenException()
 
     await this.userService.update({
-      id: userId,
+      id: userId ?? '',
       usersType: 'elderly',
-      permission_notification: true,
+      ask_user_id: req.body.ask_user_id,
     })
 
     res.json({ userId })
@@ -71,12 +81,11 @@ class UsersController {
 
   proactiveSubDisabled = async (req: CustomRequest, res: Response) => {
     const userId = req.user?.user_id
-    if (!userId) throw new WithoutTokenException()
 
     await this.userService.update({
-      id: userId,
+      id: userId ?? '',
       usersType: 'elderly',
-      permission_notification: false,
+      ask_user_id: null,
     })
 
     res.json({ userId })

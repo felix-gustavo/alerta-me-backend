@@ -31,6 +31,7 @@ class UsersService implements IUsersService {
       const usersCollection = firestore().collection('users')
       const id = data.id
       delete data.id
+
       if (id) {
         if (data.ask_user_id === undefined) delete data.ask_user_id
         await usersCollection.doc(id).set(data)
@@ -124,10 +125,7 @@ class UsersService implements IUsersService {
         name: data.name,
         email: data.email,
         is_elderly: data.is_elderly,
-        access_token: data.access_token,
-        refresh_token: data.refresh_token,
         ask_user_id: data.ask_user_id,
-        permission_notification: data.permission_notification,
       }
 
       for (const key in dataToUpdate) {

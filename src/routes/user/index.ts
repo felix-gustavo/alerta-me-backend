@@ -25,6 +25,12 @@ class UserRoute {
       this.controller.create
     )
 
+    userRoute.post(
+      '/elderly',
+      decodeAmazonTokenMiddleware,
+      this.controller.createElderly
+    )
+
     userRoute.get(
       '/id/:id',
       getUserByIdValidateScheme,
@@ -67,20 +73,14 @@ class UserRoute {
       }
     )
 
-    userRoute.post(
-      '/accountLinked',
+    userRoute.put(
+      '/proactiveSubAccepted',
       [
         body('ask_user_id')
           .isString()
           .withMessage('Campo ask_user_id deve ser String'),
       ],
       handleValidationErrors,
-      decodeAmazonTokenMiddleware,
-      this.controller.accountLinked
-    )
-
-    userRoute.put(
-      '/proactiveSubAccepted',
       decodeAmazonTokenMiddleware,
       this.controller.proactiveSubAccepted
     )
