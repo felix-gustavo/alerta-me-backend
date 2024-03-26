@@ -7,7 +7,7 @@ import {
 import { UsersService } from '../services/usersService/usersService'
 import { FirebaseError } from '@firebase/util'
 import { auth } from 'firebase-admin'
-import { UserProfile, Users } from '../services/usersService/iUsersService'
+import { UserProfile } from '../services/usersService/iUsersService'
 import axios, { AxiosError } from 'axios'
 
 interface CustomRequest extends Request {
@@ -32,7 +32,7 @@ const decodeAmazonTokenMiddleware = async (
     ).data as UserProfile
 
     req.user = userData
-    next()
+    return next()
   } catch (error: unknown) {
     if ((error as AxiosError).response?.status === 400)
       throw new UnauthorizedException('Token inválido')
@@ -68,7 +68,7 @@ const decodeFirebaseTokenMiddleware = async (
       email: user.email,
       name: user.name,
     }
-    next()
+    return next()
   } catch (error: unknown) {
     switch ((error as FirebaseError)?.code) {
       case 'auth/argument-error':

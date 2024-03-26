@@ -51,7 +51,7 @@ class UserRoute {
           : decodeFirebaseTokenMiddleware(req, res, next)
       },
       (req: CustomRequest, res: Response) => {
-        req.params.email = req.user?.email ?? ''
+        req.params.email = req.user?.email as string
         req.query.isElderly = 'true'
         return this.controller.getByEmailAndType(req, res)
       }
@@ -67,7 +67,7 @@ class UserRoute {
           : decodeFirebaseTokenMiddleware(req, res, next)
       },
       (req: CustomRequest, res: Response) => {
-        req.params.email = req.user?.email ?? ''
+        req.params.email = req.user?.email as string
         req.query.isElderly = 'true'
         return this.controller.getByEmailAndType(req, res)
       }

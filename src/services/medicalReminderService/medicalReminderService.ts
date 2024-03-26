@@ -15,7 +15,6 @@ import { firestore } from 'firebase-admin'
 import cron from 'node-cron'
 import { DateFormat } from '../../utils/dateFormat'
 import { NotificationSkill } from '../../utils/notificationSkill'
-import { AuthService } from '../authService'
 import { NotificationsUser } from '../usersService/iUsersService'
 
 class MedicalReminderService implements IMedicalReminderService {
@@ -52,20 +51,22 @@ class MedicalReminderService implements IMedicalReminderService {
     const docRef = await docRefUser.add(dataToSave)
     const { id: medicalReminderId } = docRef
 
-    this.sendNotification({
-      authorization: authorization,
-      date,
-      medicalReminderId,
-      medicName: medic_name.split(' ')[0],
-      sendDataToFirestore: async (notificationUser: NotificationsUser) => {
-        await firestore()
-          .collection('users')
-          .doc(authorization.elderly.id)
-          .update({
-            notifications: firestore.FieldValue.arrayUnion(notificationUser),
-          })
-      },
-    })
+    if (authorization.user.ask_user_id) {
+      this.sendNotification({
+        authorization: authorization,
+        date,
+        medicalReminderId,
+        medicName: medic_name.split(' ')[0],
+        sendDataToFirestore: async (notificationUser: NotificationsUser) => {
+          await firestore()
+            .collection('users')
+            .doc(authorization.elderly.id)
+            .update({
+              notifications: firestore.FieldValue.arrayUnion(notificationUser),
+            })
+        },
+      })
+    }
 
     return {
       id: medicalReminderId,

@@ -9,11 +9,6 @@ class AuthController {
     const response = await this.authService.signIn(idToken)
     res.json(response)
   }
-
-  // refreshToken = async (req: Request, res: Response) => {
-  //   const refreshToken = req.body.refreshToken
-  //   return res.json(await this.authService.refreshToken(refreshToken))
-  // }
 }
 
 export { AuthController }

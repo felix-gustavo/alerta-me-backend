@@ -2,6 +2,7 @@ import { Response, Request } from 'express'
 import {
   CreateUsers,
   IUsersService,
+  UserProfile,
 } from '../services/usersService/iUsersService'
 import { CustomRequest } from '../middlewares/decodeTokenMiddleware'
 import { UnauthorizedException, WithoutTokenException } from '../exceptions'
@@ -24,13 +25,13 @@ class UsersController {
   }
 
   createElderly = async (req: CustomRequest, res: Response) => {
-    const user = req.user
+    const user = req.user as UserProfile
 
     res.json(
       await this.userService.create({
-        id: user?.user_id,
-        name: user?.name ?? '',
-        email: user?.email ?? '',
+        id: user.user_id,
+        name: user.name,
+        email: user.email,
         is_elderly: true,
         ask_user_id: null,
       })
@@ -68,10 +69,10 @@ class UsersController {
   }
 
   proactiveSubAccepted = async (req: CustomRequest, res: Response) => {
-    const userId = req.user?.user_id
+    const userId = req.user?.user_id as string
 
     await this.userService.update({
-      id: userId ?? '',
+      id: userId,
       usersType: 'elderly',
       ask_user_id: req.body.ask_user_id,
     })
@@ -80,10 +81,10 @@ class UsersController {
   }
 
   proactiveSubDisabled = async (req: CustomRequest, res: Response) => {
-    const userId = req.user?.user_id
+    const userId = req.user?.user_id as string
 
     await this.userService.update({
-      id: userId ?? '',
+      id: userId,
       usersType: 'elderly',
       ask_user_id: null,
     })
@@ -92,8 +93,7 @@ class UsersController {
   }
 
   delete = async (req: CustomRequest, res: Response) => {
-    const userId = req.user?.user_id
-    if (!userId) throw new UnauthorizedException()
+    const userId = req.user?.user_id as string
 
     const id = await this.userService.delete({ userId })
     res.json({ id })
@@ -101,9 +101,7 @@ class UsersController {
 
   deleteElderly = async (req: CustomRequest, res: Response) => {
     const { id }: { id: string } = req.body
-
-    const userId = req.user?.user_id
-    if (!userId) throw new UnauthorizedException()
+    const userId = req.user?.user_id as string
 
     await this.userService.deleteElderly({ id, userId })
     res.json({ id })

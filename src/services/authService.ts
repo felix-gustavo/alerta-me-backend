@@ -3,14 +3,6 @@ import { SessionExpiredException, UnprocessableException } from '../exceptions'
 import { IUsersService, UserProfile, Users } from './usersService/iUsersService'
 import { auth } from 'firebase-admin'
 
-type SignInElderlyParams = {
-  redirectUri: string
-  clientId: string
-  code: string
-  grantType: string
-  authorization: string
-}
-
 class AuthService {
   constructor(private readonly usersService: IUsersService) {}
 

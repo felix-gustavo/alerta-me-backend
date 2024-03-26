@@ -1,5 +1,4 @@
 import { Response } from 'express'
-import { WithoutTokenException } from '../exceptions'
 import {
   CreateMedicationReminderParams,
   IMedicationReminderService,
@@ -12,9 +11,7 @@ class MedicationReminderController {
 
   create = async (req: CustomRequest, res: Response) => {
     const data: Omit<CreateMedicationReminderParams, 'userId'> = req.body
-
-    const userId = req.user?.user_id
-    if (!userId) throw new WithoutTokenException()
+    const userId = req.user?.user_id as string
 
     const response = await this.service.create({
       ...data,
@@ -25,20 +22,15 @@ class MedicationReminderController {
   }
 
   get = async (req: CustomRequest, res: Response) => {
-    const userId = req.user?.user_id
-    if (!userId) throw new WithoutTokenException()
+    const userId = req.user?.user_id as string
 
     const response = await this.service.get({ userId })
-
     res.json(response)
   }
 
   update = async (req: CustomRequest, res: Response) => {
     const id = req.params.id as string
-
-    const userId = req.user?.user_id
-    if (!userId) throw new WithoutTokenException()
-
+    const userId = req.user?.user_id as string
     const data: Omit<UpdateMedicationReminderParams, 'userId' | 'id'> = req.body
 
     const response = await this.service.update({
@@ -52,9 +44,7 @@ class MedicationReminderController {
 
   delete = async (req: CustomRequest, res: Response) => {
     const id = req.params.id as string
-
-    const userId = req.user?.user_id
-    if (!userId) throw new WithoutTokenException()
+    const userId = req.user?.user_id as string
 
     await this.service.delete({ id, userId })
     res.status(204).send()

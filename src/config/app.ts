@@ -1,6 +1,5 @@
 import 'dotenv/config'
-import 'express-async-errors'
-import express, { NextFunction, Request, Response } from 'express'
+import express from 'express'
 import cors from 'cors'
 import * as configRoutes from './configRoutes'
 import { errorMiddleware } from '../middlewares/errorMiddleware'

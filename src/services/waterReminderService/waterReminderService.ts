@@ -1,9 +1,9 @@
 import { DateFormat } from '../../utils/dateFormat'
 import {
   CreateWaterReminderParams,
-  GetWaterReminderParams,
   IWaterReminderService,
   UpdateWaterReminderParams,
+  WaterHistory,
   WaterReminder,
 } from './iWaterReminderService'
 import { IAuthorizationService } from '../authorizationService/iAuthorizationService'
@@ -53,7 +53,9 @@ class WaterReminderService implements IWaterReminderService {
 
   get = async ({
     userId,
-  }: GetWaterReminderParams): Promise<WaterReminder | null> => {
+  }: {
+    userId: string
+  }): Promise<WaterReminder | null> => {
     const authorization = await this.authorizationService.get({
       usersType: 'user',
       usersTypeId: userId,
@@ -71,6 +73,38 @@ class WaterReminderService implements IWaterReminderService {
     if (!docSnap?.exists) return null
 
     return docSnap.data() as WaterReminder
+  }
+
+  getNotifications = async ({
+    userId,
+  }: {
+    userId: string
+  }): Promise<WaterHistory[]> => {
+    const authorization = await this.authorizationService.get({
+      usersType: 'user',
+      usersTypeId: userId,
+    })
+
+    if (!authorization)
+      throw new NotFoundException('Autorização não encontrada')
+
+    const docRefUser = firestore()
+      .collection('users')
+      .doc(authorization.elderly.id)
+      .collection('water_history')
+      .where('request', '==', true)
+      .orderBy('datetime', 'desc')
+
+    const querySnapshot = await docRefUser.get()
+    const waterHistory = querySnapshot.docs.map((doc) => {
+      const data = doc.data() as WaterHistory
+      return {
+        ...data,
+        id: doc.id,
+      }
+    })
+
+    return waterHistory
   }
 
   update = async (data: UpdateWaterReminderParams): Promise<WaterReminder> => {
