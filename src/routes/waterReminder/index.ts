@@ -17,14 +17,6 @@ class WaterReminderRoute {
     const waterReminderRoute = Router()
 
     waterReminderRoute.post(
-      '/',
-      createWaterReminderValidateScheme,
-      handleValidationErrors,
-      decodeFirebaseTokenMiddleware,
-      this.controller.create
-    )
-
-    waterReminderRoute.post(
       '/notifications',
       AddNotificationWaterValidateScheme,
       handleValidationErrors,
@@ -39,16 +31,24 @@ class WaterReminderRoute {
       this.controller.addNotifications
     )
 
-    waterReminderRoute.get(
+    waterReminderRoute.post(
       '/',
+      createWaterReminderValidateScheme,
+      handleValidationErrors,
       decodeFirebaseTokenMiddleware,
-      this.controller.get
+      this.controller.create
     )
 
     waterReminderRoute.get(
       '/notifications',
       decodeAmazonTokenMiddleware,
       this.controller.getNotifications
+    )
+
+    waterReminderRoute.get(
+      '/',
+      decodeFirebaseTokenMiddleware,
+      this.controller.get
     )
 
     waterReminderRoute.put(
