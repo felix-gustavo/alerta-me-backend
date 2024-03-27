@@ -1,4 +1,4 @@
-import { Router } from 'express'
+import { NextFunction, Request, Response, Router } from 'express'
 import { handleValidationErrors } from '../../validations/handleValidationErrors'
 import { WaterReminderController } from '../../controllers/waterReminderController'
 import { createWaterReminderValidateScheme } from '../../validations/schemes/createWaterReminderValidate'
@@ -7,6 +7,8 @@ import {
   decodeAmazonTokenMiddleware,
   decodeFirebaseTokenMiddleware,
 } from '../../middlewares/decodeTokenMiddleware'
+import { AddNotificationWaterValidateScheme } from '../../validations/schemes/addNotificationWaterValidate'
+import { ForbiddenException } from '../../exceptions'
 
 class WaterReminderRoute {
   constructor(private readonly controller: WaterReminderController) {}
@@ -20,6 +22,21 @@ class WaterReminderRoute {
       handleValidationErrors,
       decodeFirebaseTokenMiddleware,
       this.controller.create
+    )
+
+    waterReminderRoute.post(
+      '/notifications',
+      AddNotificationWaterValidateScheme,
+      handleValidationErrors,
+      (req: Request, _: Response, next: NextFunction) => {
+        console.log('req.hostname: ', req.hostname)
+        if (req.hostname === process.env.LAMBDA_URL_NOTIFICATION) {
+          return next()
+        }
+
+        throw new ForbiddenException()
+      },
+      this.controller.addNotifications
     )
 
     waterReminderRoute.get(

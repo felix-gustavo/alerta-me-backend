@@ -1,5 +1,6 @@
 import { DateFormat } from '../../utils/dateFormat'
 import {
+  AddNotificationParams,
   CreateWaterReminderParams,
   IWaterReminderService,
   UpdateWaterReminderParams,
@@ -51,6 +52,37 @@ class WaterReminderService implements IWaterReminderService {
     return dataToSave
   }
 
+  addNotifications = async ({
+    elderlyId,
+    suggested_amount,
+  }: AddNotificationParams): Promise<WaterHistory> => {
+    const authorization = await this.authorizationService.get({
+      usersType: 'elderly',
+      usersTypeId: elderlyId,
+    })
+
+    if (!authorization)
+      throw new NotFoundException('Autorização não encontrada')
+
+    const docRefUser = firestore()
+      .collection('users')
+      .doc(authorization.elderly.id)
+      .collection('water_history')
+
+    const dataToSave: Omit<WaterHistory, 'id'> = {
+      amount: null,
+      request: true,
+      suggested_amount,
+      datetime: new Date(),
+    }
+
+    await docRefUser.add(dataToSave)
+    return {
+      ...dataToSave,
+      id: docRefUser.id,
+    }
+  }
+
   get = async ({
     userId,
   }: {
@@ -81,7 +113,7 @@ class WaterReminderService implements IWaterReminderService {
     userId: string
   }): Promise<WaterHistory[]> => {
     const authorization = await this.authorizationService.get({
-      usersType: 'user',
+      usersType: 'elderly',
       usersTypeId: userId,
     })
 

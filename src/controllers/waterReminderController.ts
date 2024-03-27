@@ -1,5 +1,6 @@
 import { Response, Request } from 'express'
 import {
+  AddNotificationParams,
   CreateWaterReminderParams,
   IWaterReminderService,
   UpdateWaterReminderParams,
@@ -18,6 +19,12 @@ class WaterReminderController {
       userId,
     })
 
+    res.json(response)
+  }
+
+  addNotifications = async (req: Request, res: Response) => {
+    const data: AddNotificationParams = req.body
+    const response = await this.waterReminderService.addNotifications(data)
     res.json(response)
   }
 
