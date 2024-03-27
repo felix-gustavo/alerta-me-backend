@@ -21,10 +21,8 @@ class WaterReminderRoute {
       AddNotificationWaterValidateScheme,
       handleValidationErrors,
       (req: Request, _: Response, next: NextFunction) => {
-        console.log('req.hostname: ', req.hostname)
-        if (req.hostname === process.env.LAMBDA_URL_NOTIFICATION) {
-          return next()
-        }
+        console.log('req.headers.authorization: ', req.headers.authorization)
+        if (req.headers.authorization === process.env.SECRET) return next()
 
         throw new ForbiddenException()
       },
