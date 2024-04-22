@@ -1,9 +1,11 @@
 type CreateWaterReminderParams = {
+  userName: string
   userId: string
   start: string
   end: string
   interval: string
   amount: string
+  reminders: string[]
 }
 
 type AddNotificationParams = {
@@ -17,6 +19,7 @@ type WaterReminder = {
   interval: number
   amount: number
   active: boolean
+  reminders: string[]
 }
 
 type WaterHistory = {
@@ -27,15 +30,25 @@ type WaterHistory = {
   amount: number | null
 }
 
-type UpdateWaterReminderParams = Pick<CreateWaterReminderParams, 'userId'> &
+type AmountHistoryParams = {
+  id: string
+  amount: number | null
+  userId: string
+}
+
+type UpdateWaterReminderParams = Pick<
+  CreateWaterReminderParams,
+  'userId' | 'userName'
+> &
   Partial<Omit<CreateWaterReminderParams, 'userId'> & { active: boolean }>
 
 type IWaterReminderService = {
   create(data: CreateWaterReminderParams): Promise<WaterReminder>
-  addNotifications(data: AddNotificationParams): Promise<WaterHistory>
   get(data: { userId: string }): Promise<WaterReminder | null>
-  getNotifications(data: { userId: string }): Promise<WaterHistory[]>
   update(data: UpdateWaterReminderParams): Promise<WaterReminder>
+  addHistory(data: AddNotificationParams): Promise<WaterHistory>
+  getHistory(data: { userId: string }): Promise<WaterHistory[]>
+  setAmountHistory(data: AmountHistoryParams): Promise<void>
 }
 
 export {
@@ -45,4 +58,5 @@ export {
   AddNotificationParams,
   WaterHistory,
   UpdateWaterReminderParams,
+  AmountHistoryParams,
 }

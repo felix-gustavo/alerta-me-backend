@@ -1,8 +1,7 @@
 import { NextFunction, Response, Router } from 'express'
 import { handleValidationErrors } from '../../validations/handleValidationErrors'
 import { UsersController } from '../../controllers/usersController'
-import { getUserByEmailValidateScheme } from '../../validations/schemes/getUserByEmailValidate'
-import { getUserByIdValidateScheme } from '../../validations/schemes/getUserByIdValidate'
+import { idParamValidateScheme } from '../../validations/schemes/idParamValidateScheme'
 import { createUserValidateScheme } from '../../validations/schemes/createUserValidate'
 import {
   CustomRequest,
@@ -11,6 +10,7 @@ import {
 } from '../../middlewares/decodeTokenMiddleware'
 import { deleteValidateScheme } from '../../validations/schemes/deleteValidate'
 import { body } from 'express-validator'
+import { NotFoundException } from '../../exceptions'
 
 class UserRoute {
   constructor(private readonly controller: UsersController) {}
@@ -18,12 +18,12 @@ class UserRoute {
   routes = (): Router => {
     const userRoute = Router()
 
-    userRoute.post(
-      '/',
-      createUserValidateScheme,
-      handleValidationErrors,
-      this.controller.create
-    )
+    // userRoute.post(
+    //   '/',
+    //   createUserValidateScheme,
+    //   handleValidationErrors,
+    //   this.controller.create
+    // )
 
     userRoute.post(
       '/elderly',
@@ -32,16 +32,16 @@ class UserRoute {
     )
 
     userRoute.get(
-      '/id/:id',
-      getUserByIdValidateScheme,
+      '/elderly/id/:id',
+      idParamValidateScheme,
       handleValidationErrors,
       decodeFirebaseTokenMiddleware,
-      this.controller.getById
+      this.controller.getElderlyById
     )
 
     userRoute.get(
-      '/email/:email',
-      getUserByEmailValidateScheme,
+      '/id/:id',
+      idParamValidateScheme,
       handleValidationErrors,
       (req: CustomRequest, res: Response, next: NextFunction) => {
         const isElderly = (req.query.isElderly as string | undefined) === 'true'
@@ -50,11 +50,7 @@ class UserRoute {
           ? decodeAmazonTokenMiddleware(req, res, next)
           : decodeFirebaseTokenMiddleware(req, res, next)
       },
-      (req: CustomRequest, res: Response) => {
-        req.params.email = req.user?.email as string
-        req.query.isElderly = 'true'
-        return this.controller.getByEmailAndType(req, res)
-      }
+      this.controller.getById
     )
 
     userRoute.get(
@@ -67,9 +63,9 @@ class UserRoute {
           : decodeFirebaseTokenMiddleware(req, res, next)
       },
       (req: CustomRequest, res: Response) => {
-        req.params.email = req.user?.email as string
-        req.query.isElderly = 'true'
-        return this.controller.getByEmailAndType(req, res)
+        if (req.user == null)
+          throw new NotFoundException('Usuário não encontrado')
+        return res.json(req.user)
       }
     )
 

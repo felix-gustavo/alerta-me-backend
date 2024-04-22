@@ -17,16 +17,14 @@ class WaterReminderRoute {
     const waterReminderRoute = Router()
 
     waterReminderRoute.post(
-      '/notifications',
+      '/history',
       AddNotificationWaterValidateScheme,
       handleValidationErrors,
       (req: Request, _: Response, next: NextFunction) => {
-        console.log('req.headers.authorization: ', req.headers.authorization)
         if (req.headers.authorization === process.env.SECRET) return next()
-
         throw new ForbiddenException()
       },
-      this.controller.addNotifications
+      this.controller.addHistory
     )
 
     waterReminderRoute.post(
@@ -38,9 +36,15 @@ class WaterReminderRoute {
     )
 
     waterReminderRoute.get(
-      '/notifications',
+      '/history',
       decodeAmazonTokenMiddleware,
-      this.controller.getNotifications
+      this.controller.getHistory
+    )
+
+    waterReminderRoute.put(
+      '/set-amount-history',
+      decodeAmazonTokenMiddleware,
+      this.controller.setAmountHistory
     )
 
     waterReminderRoute.get(

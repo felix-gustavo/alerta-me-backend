@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from 'express'
 import { CustomError } from '../exceptions/customError'
 
 export const errorMiddleware = (
-  error: Error & Partial<CustomError>,
+  error: CustomError,
   _req: Request,
   res: Response,
   _next: NextFunction

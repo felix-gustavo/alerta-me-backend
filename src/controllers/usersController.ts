@@ -3,32 +3,38 @@ import {
   CreateUsers,
   IUsersService,
   UserProfile,
+  UserElderly,
 } from '../services/usersService/iUsersService'
 import { CustomRequest } from '../middlewares/decodeTokenMiddleware'
-import { UnauthorizedException, WithoutTokenException } from '../exceptions'
+import {
+  NotFoundException,
+  UnauthorizedException,
+  UnprocessableException,
+  WithoutTokenException,
+} from '../exceptions'
 
 class UsersController {
   constructor(private readonly userService: IUsersService) {}
 
-  create = async (req: Request, res: Response) => {
-    const data: CreateUsers = req.body
+  // create = async (req: Request, res: Response) => {
+  //   const data: CreateUsers = req.body
 
-    res.json(
-      await this.userService.create({
-        id: data.id,
-        name: data.name,
-        email: data.email,
-        is_elderly: data.is_elderly,
-        ask_user_id: data.ask_user_id ?? null,
-      })
-    )
-  }
+  //   res.json(
+  //     await this.userService.create({
+  //       id: data.id,
+  //       name: data.name,
+  //       email: data.email,
+  //       is_elderly: data.is_elderly,
+  //       ask_user_id: data.ask_user_id ?? null,
+  //     })
+  //   )
+  // }
 
   createElderly = async (req: CustomRequest, res: Response) => {
     const user = req.user as UserProfile
 
     res.json(
-      await this.userService.create({
+      await this.userService.createElderly({
         id: user.user_id,
         name: user.name,
         email: user.email,
@@ -38,21 +44,31 @@ class UsersController {
     )
   }
 
+  getElderlyById = async (req: Request, res: Response) => {
+    const id = req.params.id as string
+    const user = await this.userService.getElderlyById(id)
+    if (user == null) throw new NotFoundException('Usuário não encontrado')
+    res.json(user)
+  }
+
   getById = async (req: Request, res: Response) => {
     const id = req.params.id as string
-    res.json(await this.userService.getById(id))
+    const user = await this.userService.getById(id)
+    if (user == null) throw new NotFoundException('Usuário não encontrado')
+    res.json(user)
   }
 
   getByEmailAndType = async (req: Request, res: Response) => {
     const email = req.params.email as string
     const isElderly = (req.query.isElderly as string | undefined) === 'true'
 
-    res.json(
-      await this.userService.getByEmailAndType({
-        email,
-        isElderly,
-      })
-    )
+    const user = await this.userService.getByEmailAndType({
+      email,
+      isElderly,
+    })
+
+    if (user == null) throw new NotFoundException('Usuário não encontrado')
+    res.json(user)
   }
 
   accountLinked = async (req: CustomRequest, res: Response) => {

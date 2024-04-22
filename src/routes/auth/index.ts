@@ -14,14 +14,6 @@ class AuthRoute {
       handleValidationErrors,
       this.controller.signIn
     )
-
-    // authRoute.post(
-    //   '/refresh-token',
-    //   refreshTokenValidateScheme,
-    //   handleValidationErrors,
-    //   this.controller.refreshToken
-    // )
-
     return authRoute
   }
 }

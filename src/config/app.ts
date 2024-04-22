@@ -3,6 +3,7 @@ import express from 'express'
 import cors from 'cors'
 import * as configRoutes from './configRoutes'
 import { errorMiddleware } from '../middlewares/errorMiddleware'
+import 'express-async-errors'
 import './firebase'
 
 const app = express()

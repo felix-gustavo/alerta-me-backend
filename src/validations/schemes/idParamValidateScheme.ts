@@ -1,7 +1,7 @@
 import { param } from 'express-validator'
 
-const getUserByIdValidateScheme = [
+const idParamValidateScheme = [
   param('id').notEmpty().withMessage('Campo id é obrigatório'),
 ]
 
-export { getUserByIdValidateScheme }
+export { idParamValidateScheme }

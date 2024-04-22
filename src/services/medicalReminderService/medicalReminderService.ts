@@ -1,7 +1,4 @@
-import {
-  Authorization,
-  IAuthorizationService,
-} from '../authorizationService/iAuthorizationService'
+import { IAuthorizationService } from '../authorizationService/iAuthorizationService'
 import {
   CreateMedicalReminderParams,
   DeleteMedicalReminderParams,
@@ -12,10 +9,6 @@ import {
 } from './iMedicalReminderService'
 import { NotFoundException } from '../../exceptions'
 import { firestore } from 'firebase-admin'
-import cron from 'node-cron'
-import { DateFormat } from '../../utils/dateFormat'
-import { NotificationSkill } from '../../utils/notificationSkill'
-import { NotificationsUser } from '../usersService/iUsersService'
 
 class MedicalReminderService implements IMedicalReminderService {
   constructor(private readonly authorizationService: IAuthorizationService) {}
@@ -38,7 +31,7 @@ class MedicalReminderService implements IMedicalReminderService {
 
     const docRefUser = firestore()
       .collection('users')
-      .doc(authorization.elderly.id)
+      .doc(authorization.elderly)
       .collection('medical_reminder')
 
     const dataToSave = {
@@ -50,23 +43,6 @@ class MedicalReminderService implements IMedicalReminderService {
 
     const docRef = await docRefUser.add(dataToSave)
     const { id: medicalReminderId } = docRef
-
-    if (authorization.user.ask_user_id) {
-      this.sendNotification({
-        authorization: authorization,
-        date,
-        medicalReminderId,
-        medicName: medic_name.split(' ')[0],
-        sendDataToFirestore: async (notificationUser: NotificationsUser) => {
-          await firestore()
-            .collection('users')
-            .doc(authorization.elderly.id)
-            .update({
-              notifications: firestore.FieldValue.arrayUnion(notificationUser),
-            })
-        },
-      })
-    }
 
     return {
       id: medicalReminderId,
@@ -91,7 +67,7 @@ class MedicalReminderService implements IMedicalReminderService {
 
     const docRefUser = firestore()
       .collection('users')
-      .doc(authorization.elderly.id)
+      .doc(authorization.elderly)
       .collection('medical_reminder')
 
     const queryRefWithPast = docRefUser.orderBy('datetime', 'desc')
@@ -134,7 +110,7 @@ class MedicalReminderService implements IMedicalReminderService {
 
     const docRefUser = firestore()
       .collection('users')
-      .doc(authorization.elderly.id)
+      .doc(authorization.elderly)
       .collection('medical_reminder')
 
     const docSnap = await docRefUser.doc(data.id).get()
@@ -156,43 +132,6 @@ class MedicalReminderService implements IMedicalReminderService {
     }
 
     await docSnap.ref.update(dataToUpdate)
-
-    const date = dataToUpdate.datetime
-
-    if (date != null) {
-      cron.getTasks().get(data.id)?.stop()
-
-      const fullMedicName = dataToUpdate.medic_name ?? docData['medic_name']
-      this.sendNotification({
-        authorization,
-        date,
-        medicalReminderId: data.id,
-        medicName: fullMedicName.split(' ')[0],
-        sendDataToFirestore: async (notificationUser: NotificationsUser) => {
-          const userRef = firestore()
-            .collection('users')
-            .doc(authorization.elderly.id)
-
-          await firestore().runTransaction(
-            async (transaction: firestore.Transaction) => {
-              const doc = await transaction.get(userRef)
-              const notifications: NotificationsUser[] =
-                doc.data()?.notifications ?? []
-
-              console.log('notifications: ', JSON.stringify(notifications))
-
-              const index = notifications.findIndex((e) => e.id === data.id)
-              if (index != -1) {
-                delete notifications[index]
-                notifications.splice(index, 0, notificationUser)
-              } else notifications.push(notificationUser)
-
-              return transaction.update(userRef, { notifications })
-            }
-          )
-        },
-      })
-    }
 
     return {
       id: data.id,
@@ -219,7 +158,7 @@ class MedicalReminderService implements IMedicalReminderService {
 
     const docRefUser = firestore()
       .collection('users')
-      .doc(authorization.elderly.id)
+      .doc(authorization.elderly)
       .collection('medical_reminder')
       .doc(id)
 
@@ -227,51 +166,8 @@ class MedicalReminderService implements IMedicalReminderService {
     const docData = docSnap.data()
 
     if (!docData) throw new NotFoundException('Consulta não encontrada')
-
-    cron.getTasks().get(id)?.stop()
-
     await docSnap.ref.delete()
     return
-  }
-
-  private sendNotification({
-    date,
-    authorization,
-    medicalReminderId,
-    medicName,
-    sendDataToFirestore,
-  }: {
-    date: Date
-    authorization: Authorization
-    medicName: string
-    medicalReminderId: string
-    sendDataToFirestore: (notificationUser: NotificationsUser) => Promise<void>
-  }) {
-    if (Date.now() >= date.getTime()) return
-    const dateCron = DateFormat.dateToCron(date)
-    console.log('dateCron create: ', dateCron)
-
-    const task = cron.schedule(
-      dateCron,
-      async () => {
-        const notificationSkill = new NotificationSkill()
-        await notificationSkill.send({
-          carerName: authorization.user.name,
-          elderly: authorization.elderly,
-        })
-
-        const notificationUser: NotificationsUser = {
-          id: medicalReminderId,
-          type: 'medical_reminder',
-          message: `Você tem uma consulta agendada com ${medicName} as ${date.getHours()}:${date.getMinutes()}`,
-        }
-
-        await sendDataToFirestore(notificationUser)
-
-        task.stop()
-      },
-      { name: medicalReminderId }
-    )
   }
 }
 

@@ -31,13 +31,19 @@ const decodeAmazonTokenMiddleware = async (
       })
     ).data as UserProfile
 
+    // const user = await UsersService.getInstance().getByEmailAndType({
+    //   email: userData.email ?? '',
+    //   isElderly: true,
+    // })
+    // if (!user) throw new UnauthorizedException('Usuário não encontrado')
+
     req.user = userData
     return next()
   } catch (error: unknown) {
     if ((error as AxiosError).response?.status === 400)
       throw new UnauthorizedException('Token inválido')
 
-    throw error
+    return next(error)
   }
 }
 
@@ -48,26 +54,23 @@ const decodeFirebaseTokenMiddleware = async (
 ) => {
   try {
     const authorizationHeader = req.headers.authorization
-
     if (!authorizationHeader || !authorizationHeader.startsWith('Bearer '))
       throw new WithoutTokenException()
 
     const token = authorizationHeader.split('Bearer ')[1]
     const decodedToken = await auth().verifyIdToken(token)
 
-    const userService = UsersService.getInstance()
-
-    const user = await userService.getByEmailAndType({
-      email: decodedToken.email ?? '',
-      isElderly: false,
-    })
-    if (!user) throw new UnauthorizedException('Usuário não encontrado')
-
+    // const user = await UsersService.getInstance().getByEmailAndType({
+    //   email: decodedToken.email ?? '',
+    //   isElderly: false,
+    // })
+    // if (!user) throw new UnauthorizedException('Usuário não encontrado')
     req.user = {
-      user_id: user.id,
-      email: user.email,
-      name: user.name,
+      user_id: decodedToken.uid,
+      name: decodedToken.name,
+      email: decodedToken.email ?? '',
     }
+
     return next()
   } catch (error: unknown) {
     switch ((error as FirebaseError)?.code) {
@@ -77,7 +80,7 @@ const decodeFirebaseTokenMiddleware = async (
         throw new SessionExpiredException()
     }
 
-    throw error
+    return next(error)
   }
 }
 

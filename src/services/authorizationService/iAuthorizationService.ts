@@ -1,4 +1,4 @@
-import { Users, UsersType } from '../usersService/iUsersService'
+import { UsersType } from '../usersService/iUsersService'
 
 interface CreateAuthorizationParams {
   elderlyEmail: string
@@ -14,9 +14,9 @@ type AuthorizationStatus = 'aprovado' | 'aguardando' | 'negado'
 
 interface Authorization {
   id: string
-  elderly: Users
+  elderly: string
   status: AuthorizationStatus
-  user: Users
+  user: string
 }
 
 type UpdateAuthorizationParams = {

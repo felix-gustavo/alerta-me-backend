@@ -51,38 +51,33 @@ class MedicationReminderService implements IMedicationReminderService {
     userId,
     ...data
   }: CreateMedicationReminderParams): Promise<MedicationReminder> => {
-    try {
-      const authorization = await this.authorizationService.get({
-        usersType: 'user',
-        usersTypeId: userId,
-      })
+    const authorization = await this.authorizationService.get({
+      usersType: 'user',
+      usersTypeId: userId,
+    })
 
-      if (!authorization)
-        throw new NotFoundException('Autorização não encontrada')
+    if (!authorization)
+      throw new NotFoundException('Autorização não encontrada')
 
-      const colRef = firestore()
-        .collection('users')
-        .doc(authorization.elderly.id)
-        .collection('medication_reminder')
+    const colRef = firestore()
+      .collection('users')
+      .doc(authorization.elderly)
+      .collection('medication_reminder')
 
-      const dataToSave = {
-        name,
-        dosage_unit,
-        dosage_pronunciation,
-        comments: comments ?? null,
-        dose: this.convertDoseToSave(this.cleanDose(data.dose)),
-      }
-
-      const docRef = await colRef.add(dataToSave)
-
-      return {
-        ...dataToSave,
-        id: docRef.id,
-      } as MedicationReminder
-    } catch (error: unknown) {
-      console.error('Deu erro create MedicationReminderService', error)
-      throw error
+    const dataToSave = {
+      name,
+      dosage_unit,
+      dosage_pronunciation,
+      comments: comments ?? null,
+      dose: this.convertDoseToSave(this.cleanDose(data.dose)),
     }
+
+    const docRef = await colRef.add(dataToSave)
+
+    return {
+      ...dataToSave,
+      id: docRef.id,
+    } as MedicationReminder
   }
 
   get = async ({
@@ -98,7 +93,7 @@ class MedicationReminderService implements IMedicationReminderService {
 
     const colRef = firestore()
       .collection('users')
-      .doc(authorization.elderly.id)
+      .doc(authorization.elderly)
       .collection('medication_reminder')
       .orderBy('name', 'desc')
 
@@ -134,7 +129,7 @@ class MedicationReminderService implements IMedicationReminderService {
 
     const docRefUser = firestore()
       .collection('users')
-      .doc(authorization.elderly.id)
+      .doc(authorization.elderly)
       .collection('medication_reminder')
       .doc(data.id)
 
@@ -186,7 +181,7 @@ class MedicationReminderService implements IMedicationReminderService {
 
     const docRefUser = firestore()
       .collection('users')
-      .doc(authorization.elderly.id)
+      .doc(authorization.elderly)
       .collection('medication_reminder')
       .doc(id)
 

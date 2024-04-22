@@ -13,18 +13,14 @@ class WaterReminderController {
   create = async (req: CustomRequest, res: Response) => {
     const data: Omit<CreateWaterReminderParams, 'userId'> = req.body
     const userId = req.user?.user_id as string
+    const userName = req.user?.name as string
 
     const response = await this.waterReminderService.create({
       ...data,
       userId,
+      userName,
     })
 
-    res.json(response)
-  }
-
-  addNotifications = async (req: Request, res: Response) => {
-    const data: AddNotificationParams = req.body
-    const response = await this.waterReminderService.addNotifications(data)
     res.json(response)
   }
 
@@ -35,25 +31,47 @@ class WaterReminderController {
     res.json(response)
   }
 
-  getNotifications = async (req: CustomRequest, res: Response) => {
+  update = async (req: CustomRequest, res: Response) => {
+    const data: Omit<UpdateWaterReminderParams, 'userId'> = req.body
     const userId = req.user?.user_id as string
-    const response = await this.waterReminderService.getNotifications({
+    const userName = req.user?.name as string
+
+    const response = await this.waterReminderService.update({
+      ...data,
+      userId,
+      userName,
+    })
+
+    res.json(response)
+  }
+
+  addHistory = async (req: Request, res: Response) => {
+    const data: AddNotificationParams = req.body
+    const response = await this.waterReminderService.addHistory(data)
+    res.json(response)
+  }
+
+  getHistory = async (req: CustomRequest, res: Response) => {
+    const userId = req.user?.user_id as string
+    const response = await this.waterReminderService.getHistory({
       userId,
     })
 
     res.json(response)
   }
 
-  update = async (req: CustomRequest, res: Response) => {
+  setAmountHistory = async (req: CustomRequest, res: Response) => {
     const userId = req.user?.user_id as string
-    const data: Omit<UpdateWaterReminderParams, 'userId'> = req.body
+    const id = req.body.id
+    const amount = req.body.amount
 
-    const response = await this.waterReminderService.update({
-      ...data,
+    await this.waterReminderService.setAmountHistory({
+      id,
+      amount,
       userId,
     })
 
-    res.json(response)
+    res.json(id)
   }
 }
 

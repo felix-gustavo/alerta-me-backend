@@ -4,7 +4,7 @@ type UserProfile = {
   email: string
 }
 
-type Users = {
+type UserElderly = {
   id: string
   name: string
   email: string
@@ -15,7 +15,7 @@ type Users = {
 type UsersType = 'user' | 'elderly'
 
 type CreateUsers = Omit<
-  Omit<Users, 'ask_user_id' | 'permission_notification'> & {
+  Omit<UserElderly, 'ask_user_id' | 'permission_notification'> & {
     ask_user_id?: string | null
   },
   'id'
@@ -23,7 +23,7 @@ type CreateUsers = Omit<
   id?: string
 }
 
-type UpdateParams = Partial<Users> & {
+type UpdateParams = Partial<UserElderly> & {
   id: string
   usersType: UsersType
 }
@@ -45,21 +45,22 @@ type NotificationsUser = {
 }
 
 interface IUsersService {
-  create(data: CreateUsers): Promise<Users>
-  getById(id: string): Promise<Users | null>
+  createElderly(data: CreateUsers): Promise<UserElderly>
+  getElderlyById(id: string): Promise<UserElderly | null>
+  getById(id: string): Promise<UserProfile | null>
   getByEmailAndType({
     email,
     isElderly,
-  }: GetByEmailAndTypeParams): Promise<Users | null>
+  }: GetByEmailAndTypeParams): Promise<UserElderly | null>
   update(data: UpdateParams): Promise<string>
   delete(data: { userId: string }): Promise<string>
-  deleteElderly(data: DeleteElderlyParams): Promise<void>
+  deleteElderly(data: DeleteElderlyParams): Promise<string>
 }
 
 export {
   IUsersService,
   UserProfile,
-  Users,
+  UserElderly,
   UsersType,
   CreateUsers,
   UpdateParams,

@@ -4,14 +4,12 @@ class DateFormat {
     return parseInt(hours) * 100 + parseInt(minutes)
   }
 
-  static dateToCron(date: Date): string {
-    const minutes = date.getMinutes()
-    const hours = date.getHours()
-    const days = date.getDate()
-    const months = date.getMonth() + 1
-    const dayOfWeek = date.getDay()
-
-    return `${minutes} ${hours} ${days} ${months} ${dayOfWeek}`
+  static formatNumberToHHMM(number: number): string {
+    const hours = Math.floor(number / 100)
+    const minutes = number % 100
+    const formattedHours = hours < 10 ? `0${hours}` : `${hours}`
+    const formattedMinutes = minutes < 10 ? `0${minutes}` : `${minutes}`
+    return `${formattedHours}:${formattedMinutes}`
   }
 }
 
