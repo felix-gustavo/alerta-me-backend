@@ -27,6 +27,7 @@ class WaterReminderService implements IWaterReminderService {
     const amount = parseInt(data.amount)
     const id = data.userId
     const reminders = data.reminders
+    const active = data.active
 
     const authorization = await this.authorizationService.get({
       usersType: 'user',
@@ -54,7 +55,7 @@ class WaterReminderService implements IWaterReminderService {
       end,
       interval,
       amount,
-      active: true,
+      active,
       reminders,
     }
 
@@ -63,7 +64,7 @@ class WaterReminderService implements IWaterReminderService {
     const { ask_user_id, id: elderlyId } = userElderly
 
     let amazonReq: Promise<void> | null = null
-    if (ask_user_id != null) {
+    if (ask_user_id != null && dataToSave.active) {
       const amazonScheduler = new AmazonScheduler()
       amazonReq = amazonScheduler.create({
         interval,
@@ -139,22 +140,13 @@ class WaterReminderService implements IWaterReminderService {
 
     const docData = docSnap.data() as WaterReminder
 
-    const dataToUpdate = {
-      start,
-      end,
-      interval,
-      amount,
-      active,
-      reminders,
-    }
-
-    const mergedData: WaterReminder = {
-      start: dataToUpdate.start ?? docData.start,
-      end: dataToUpdate.end ?? docData.end,
-      amount: dataToUpdate.amount ?? docData.amount,
-      interval: dataToUpdate.interval ?? docData.interval,
-      active: dataToUpdate.active ?? docData.active,
-      reminders: dataToUpdate.reminders ?? docData.reminders,
+    const dataToUpdate: WaterReminder = {
+      start: start ?? docData.start,
+      end: end ?? docData.end,
+      amount: amount ?? docData.amount,
+      interval: interval ?? docData.interval,
+      active: active ?? docData.active,
+      reminders: reminders ?? docData.reminders,
     }
 
     for (const key in dataToUpdate) {
@@ -164,31 +156,29 @@ class WaterReminderService implements IWaterReminderService {
     }
 
     const updateReq = docSnap.ref.update(dataToUpdate)
-
     const { ask_user_id, id: elderlyId } = userElderly
-
     let amazonReq: Promise<void> | null = null
+
     if (ask_user_id != null) {
       const amazonScheduler = new AmazonScheduler()
-
-      const asd = new Date()
-
-      amazonReq = amazonScheduler.update({
-        interval: mergedData.interval,
-        reminders: mergedData.reminders,
-        input: {
-          carerName: data.userName,
-          elderly: {
-            id: elderlyId,
-            ask_user_id,
-          },
-          suggested_amount: mergedData.amount / (reminders?.length ?? 1),
-        },
-      })
+      amazonReq = dataToUpdate.active
+        ? amazonScheduler.createOrUpdate({
+            interval: dataToUpdate.interval,
+            reminders: dataToUpdate.reminders,
+            input: {
+              carerName: data.userName,
+              elderly: {
+                id: elderlyId,
+                ask_user_id,
+              },
+              suggested_amount: dataToUpdate.amount / (reminders?.length ?? 1),
+            },
+          })
+        : amazonScheduler.delete({ elderlyId })
     }
 
     await Promise.all([updateReq, amazonReq])
-    return mergedData
+    return dataToUpdate
   }
 
   addHistory = async ({

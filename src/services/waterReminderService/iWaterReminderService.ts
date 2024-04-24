@@ -5,6 +5,7 @@ type CreateWaterReminderParams = {
   end: string
   interval: string
   amount: string
+  active: boolean
   reminders: string[]
 }
 
