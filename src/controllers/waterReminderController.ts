@@ -1,6 +1,7 @@
 import { Response, Request } from 'express'
 import {
   AddNotificationParams,
+  AmountHistoryParams,
   CreateWaterReminderParams,
   IWaterReminderService,
   UpdateWaterReminderParams,
@@ -62,16 +63,13 @@ class WaterReminderController {
 
   setAmountHistory = async (req: CustomRequest, res: Response) => {
     const userId = req.user?.user_id as string
-    const id = req.body.id
-    const amount = req.body.amount
+    const id = req.body.id as string
+    const amount = parseInt(req.body.amount)
 
-    await this.waterReminderService.setAmountHistory({
-      id,
-      amount,
-      userId,
-    })
+    const data: AmountHistoryParams = { id, amount, userId }
+    await this.waterReminderService.setAmountHistory(data)
 
-    res.json(id)
+    res.json(data.id)
   }
 }
 

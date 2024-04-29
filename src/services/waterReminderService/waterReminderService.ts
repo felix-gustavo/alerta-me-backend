@@ -245,10 +245,14 @@ class WaterReminderService implements IWaterReminderService {
     return { ...waterHistory, id: doc.id }
   }
 
-  async setAmountHistory(data: AmountHistoryParams): Promise<void> {
+  async setAmountHistory({
+    id,
+    amount,
+    userId,
+  }: AmountHistoryParams): Promise<void> {
     const authorization = await this.authorizationService.get({
       usersType: 'elderly',
-      usersTypeId: data.userId,
+      usersTypeId: userId,
     })
 
     if (!authorization)
@@ -258,8 +262,8 @@ class WaterReminderService implements IWaterReminderService {
       .collection('users')
       .doc(authorization.elderly)
       .collection('water_history')
-      .doc(data.id)
-      .set({ amount: data.amount })
+      .doc(id)
+      .update({ amount })
   }
 }
 

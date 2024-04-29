@@ -9,6 +9,7 @@ import {
 } from '../../middlewares/decodeTokenMiddleware'
 import { AddNotificationWaterValidateScheme } from '../../validations/schemes/addNotificationWaterValidate'
 import { ForbiddenException } from '../../exceptions'
+import { setHistoryValidateScheme } from '../../validations/schemes/setHistoryValidade'
 
 class WaterReminderRoute {
   constructor(private readonly controller: WaterReminderController) {}
@@ -43,6 +44,8 @@ class WaterReminderRoute {
 
     waterReminderRoute.put(
       '/set-amount-history',
+      setHistoryValidateScheme,
+      handleValidationErrors,
       decodeAmazonTokenMiddleware,
       this.controller.setAmountHistory
     )
