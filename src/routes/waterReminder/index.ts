@@ -17,7 +17,7 @@ class WaterReminderRoute {
     const waterReminderRoute = Router()
 
     waterReminderRoute.post(
-      '/history',
+      '/recent-history',
       AddNotificationWaterValidateScheme,
       handleValidationErrors,
       (req: Request, _: Response, next: NextFunction) => {
@@ -36,9 +36,9 @@ class WaterReminderRoute {
     )
 
     waterReminderRoute.get(
-      '/history',
+      '/recent-history',
       decodeAmazonTokenMiddleware,
-      this.controller.getHistory
+      this.controller.getRecentHistory
     )
 
     waterReminderRoute.put(

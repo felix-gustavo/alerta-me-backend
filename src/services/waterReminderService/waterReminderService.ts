@@ -75,7 +75,7 @@ class WaterReminderService implements IWaterReminderService {
             id: elderlyId,
             ask_user_id,
           },
-          suggested_amount: amount / reminders.length,
+          suggested_amount: Math.trunc(amount / reminders.length),
         },
       })
     }
@@ -171,7 +171,9 @@ class WaterReminderService implements IWaterReminderService {
                 id: elderlyId,
                 ask_user_id,
               },
-              suggested_amount: dataToUpdate.amount / (reminders?.length ?? 1),
+              suggested_amount: Math.trunc(
+                dataToUpdate.amount / (reminders?.length ?? 1)
+              ),
             },
           })
         : amazonScheduler.delete({ elderlyId })
@@ -198,11 +200,13 @@ class WaterReminderService implements IWaterReminderService {
       .doc(authorization.elderly)
       .collection('water_history')
 
+    const datetime = new Date()
+    datetime.setSeconds(0)
+
     const dataToSave: Omit<WaterHistory, 'id'> = {
       amount: null,
-      request: true,
       suggested_amount,
-      datetime: new Date(),
+      datetime,
     }
 
     await docRefUser.add(dataToSave)
@@ -212,11 +216,11 @@ class WaterReminderService implements IWaterReminderService {
     }
   }
 
-  getHistory = async ({
+  getRecentHistory = async ({
     userId,
   }: {
     userId: string
-  }): Promise<WaterHistory[]> => {
+  }): Promise<WaterHistory | null> => {
     const authorization = await this.authorizationService.get({
       usersType: 'elderly',
       usersTypeId: userId,
@@ -229,19 +233,16 @@ class WaterReminderService implements IWaterReminderService {
       .collection('users')
       .doc(authorization.elderly)
       .collection('water_history')
-      .where('request', '==', true)
       .orderBy('datetime', 'desc')
+      .limit(1)
 
     const querySnapshot = await docRefUser.get()
-    const waterHistory = querySnapshot.docs.map((doc) => {
-      const data = doc.data() as WaterHistory
-      return {
-        ...data,
-        id: doc.id,
-      }
-    })
+    if (querySnapshot.empty) return null
 
-    return waterHistory
+    const doc = querySnapshot.docs[0]
+    const waterHistory = doc.data() as WaterHistory
+
+    return { ...waterHistory, id: doc.id }
   }
 
   async setAmountHistory(data: AmountHistoryParams): Promise<void> {

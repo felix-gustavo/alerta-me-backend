@@ -51,9 +51,9 @@ class WaterReminderController {
     res.json(response)
   }
 
-  getHistory = async (req: CustomRequest, res: Response) => {
+  getRecentHistory = async (req: CustomRequest, res: Response) => {
     const userId = req.user?.user_id as string
-    const response = await this.waterReminderService.getHistory({
+    const response = await this.waterReminderService.getRecentHistory({
       userId,
     })
 
