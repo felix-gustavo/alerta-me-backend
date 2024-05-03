@@ -1,15 +1,12 @@
 import { firestore } from 'firebase-admin'
-import { FirebaseError } from '@firebase/util'
 import {
   NotFoundException,
   UnauthorizedException,
   UnprocessableException,
-  UserCreationException,
 } from '../../exceptions'
 import {
   CreateUsers,
   DeleteElderlyParams,
-  GetByEmailAndTypeParams,
   IUsersService,
   UpdateParams,
   UserElderly,
@@ -54,18 +51,15 @@ class UsersService implements IUsersService {
     return userData.data() as UserElderly
   }
 
-  async getByEmailAndType(
-    params: GetByEmailAndTypeParams
-  ): Promise<UserElderly | null> {
-    const userRef = firestore().collection('users')
-    const query = userRef
-      .where('email', '==', params.email)
-      .where('is_elderly', '==', params.isElderly)
+  async getByEmail({ email }: { email: string }): Promise<UserElderly | null> {
+    const snapshot = await firestore()
+      .collection('users')
+      .where('email', '==', email)
+      .get()
 
-    const snapshot = await query.get()
     if (snapshot.empty) return null
 
-    const firstDoc = snapshot.docs[0]
+    const firstDoc = snapshot.docs[0].data()
     const userData = firstDoc.data() as Omit<UserElderly, 'id'>
 
     return {
@@ -100,16 +94,13 @@ class UsersService implements IUsersService {
   }
 
   async update(data: UpdateParams): Promise<string> {
-    if (data.usersType === 'user') {
-      const authorizationService = new AuthorizationService(this)
-      const authorization = await authorizationService.get({
-        usersTypeId: data.id,
-        usersType: data.usersType,
-      })
+    const authorizationService = new AuthorizationService(this)
+    const authorization = await authorizationService.getByElderly({
+      elderlyId: data.id,
+    })
 
-      if (!authorization)
-        throw new NotFoundException('Autorização não encontrada')
-    }
+    if (!authorization || authorization.status !== 'aprovado')
+      throw new UnprocessableException('Não autorizado')
 
     const docSnap = await firestore().collection('users').doc(data.id).get()
     const docData = docSnap.data()
@@ -136,34 +127,32 @@ class UsersService implements IUsersService {
 
   async delete({ userId }: { userId: string }): Promise<string> {
     const authorizationService = new AuthorizationService(this)
-    const authorization = await authorizationService.get({
-      usersTypeId: userId,
-      usersType: 'user',
-    })
-
-    if (authorization) await authorizationService.delete({ userId })
-
+    await authorizationService.delete({ userId }).catch()
     await getAuth().deleteUser(userId)
     return userId
   }
 
-  async deleteElderly({ id, userId }: DeleteElderlyParams): Promise<string> {
+  async deleteElderly({
+    elderlyId,
+    userId,
+  }: DeleteElderlyParams): Promise<string> {
     const authorizationService = new AuthorizationService(this)
-    const authorization = await authorizationService.get({
-      usersTypeId: id,
-      usersType: 'elderly',
-    })
+    const authorization = await authorizationService.getByElderly({ elderlyId })
 
-    if (authorization?.user != userId)
+    if (
+      authorization == null ||
+      authorization.user != userId ||
+      authorization.status !== 'aprovado'
+    ) {
       throw new UnauthorizedException(
         'Usuário não tem permissão para excluir o usuário idoso fornecido'
       )
-
+    }
     await authorizationService.delete({ userId })
 
-    const docRef = firestore().collection('users').doc(id)
+    const docRef = firestore().collection('users').doc(elderlyId)
     await firestore().recursiveDelete(docRef)
-    return id
+    return elderlyId
   }
 }
 

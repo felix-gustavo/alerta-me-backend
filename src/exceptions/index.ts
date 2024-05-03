@@ -12,12 +12,6 @@ class WithoutTokenException extends CustomError {
   }
 }
 
-class NotIsElderlyException extends CustomError {
-  constructor(message?: string) {
-    super(message ?? 'Usuário não é idoso', 403)
-  }
-}
-
 class ForbiddenException extends CustomError {
   constructor(message?: string) {
     super(message ?? 'Recurso não disponível', 403)
@@ -63,7 +57,6 @@ class ServerError extends CustomError {
 export {
   UnauthorizedException,
   WithoutTokenException,
-  NotIsElderlyException,
   ForbiddenException,
   NotFoundException,
   SessionExpiredException,

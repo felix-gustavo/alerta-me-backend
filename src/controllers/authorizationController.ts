@@ -18,24 +18,14 @@ class AuthorizationController {
 
   getAuthorizationByUser = async (req: CustomRequest, res: Response) => {
     const userId = req.user?.user_id as string
-
-    const response = await this.authorizationService.get({
-      usersTypeId: userId,
-      usersType: 'user',
-    })
+    const response = await this.authorizationService.getByUser({ userId })
 
     res.json(response)
   }
 
   getAuthorizationByElderly = async (req: CustomRequest, res: Response) => {
-    const userId = req.user?.user_id as string
-
-    const response = await this.authorizationService.get({
-      usersTypeId: userId,
-      usersType: 'elderly',
-    })
-
-    res.json(response)
+    const elderlyId = req.user?.user_id as string
+    res.json(this.authorizationService.getByElderly({ elderlyId }))
   }
 
   approvedAuthorizationElderly = async (req: CustomRequest, res: Response) => {
@@ -45,8 +35,7 @@ class AuthorizationController {
     await this.authorizationService.updateStatus({
       id,
       status: 'aprovado',
-      usersType: 'elderly',
-      usersTypeId: userId,
+      elderlyId: userId,
     })
 
     res.status(204).send()

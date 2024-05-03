@@ -58,38 +58,30 @@ class UsersController {
     res.json(user)
   }
 
-  getByEmailAndType = async (req: Request, res: Response) => {
+  getByEmail = async (req: Request, res: Response) => {
     const email = req.params.email as string
-    const isElderly = (req.query.isElderly as string | undefined) === 'true'
-
-    const user = await this.userService.getByEmailAndType({
-      email,
-      isElderly,
-    })
-
+    const user = await this.userService.getByEmail({ email })
     if (user == null) throw new NotFoundException('Usuário não encontrado')
     res.json(user)
   }
 
-  accountLinked = async (req: CustomRequest, res: Response) => {
-    const userId = req.user?.user_id
-    if (!userId) throw new WithoutTokenException()
+  // accountLinked = async (req: CustomRequest, res: Response) => {
+  //   const userId = req.user?.user_id
+  //   if (!userId) throw new WithoutTokenException()
 
-    await this.userService.update({
-      id: userId,
-      usersType: 'elderly',
-      ask_user_id: req.body.ask_user_id,
-    })
+  //   await this.userService.update({
+  //     id: userId,
+  //     ask_user_id: req.body.ask_user_id,
+  //   })
 
-    res.json({ userId })
-  }
+  //   res.json({ userId })
+  // }
 
   proactiveSubAccepted = async (req: CustomRequest, res: Response) => {
     const userId = req.user?.user_id as string
 
     await this.userService.update({
       id: userId,
-      usersType: 'elderly',
       ask_user_id: req.body.ask_user_id,
     })
 
@@ -101,7 +93,6 @@ class UsersController {
 
     await this.userService.update({
       id: userId,
-      usersType: 'elderly',
       ask_user_id: null,
     })
 
@@ -119,7 +110,7 @@ class UsersController {
     const { id }: { id: string } = req.body
     const userId = req.user?.user_id as string
 
-    await this.userService.deleteElderly({ id, userId })
+    await this.userService.deleteElderly({ elderlyId: id, userId })
     res.json({ id })
   }
 }
