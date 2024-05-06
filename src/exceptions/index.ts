@@ -42,12 +42,6 @@ class UnprocessableException extends CustomError {
   }
 }
 
-class AuthorizationCreationException extends CustomError {
-  constructor(message?: string) {
-    super(message ?? 'Erro ao registrar pedido de autorização', 422)
-  }
-}
-
 class ServerError extends CustomError {
   constructor(message?: string) {
     super(message ?? 'Erro interno do servidor', 500)
@@ -62,6 +56,5 @@ export {
   SessionExpiredException,
   UserCreationException,
   UnprocessableException,
-  AuthorizationCreationException,
   ServerError,
 }

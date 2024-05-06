@@ -11,7 +11,7 @@ import {
 import { IAuthorizationService } from '../authorizationService/iAuthorizationService'
 import { NotFoundException, UnprocessableException } from '../../exceptions'
 import { firestore } from 'firebase-admin'
-import { IUsersService, UserElderly } from '../usersService/iUsersService'
+import { IUsersService } from '../usersService/iUsersService'
 import { AmazonScheduler } from '../amazonScheduler'
 
 class WaterReminderService implements IWaterReminderService {
@@ -25,32 +25,28 @@ class WaterReminderService implements IWaterReminderService {
     const end = DateFormat.formatHHMMToNumber(data.end)
     const interval = parseInt(data.interval)
     const amount = parseInt(data.amount)
-    const id = data.userId
+    const userId = data.userId
     const reminders = data.reminders
     const active = data.active
 
-    const authorization = await this.authorizationService.get({
-      usersType: 'user',
-      usersTypeId: id,
+    const authorization = await this.authorizationService.checkIsAuthorized({
+      userId,
     })
 
-    if (!authorization)
-      throw new NotFoundException('Autorização não encontrada')
-
-    const docRef = firestore()
+    const colRef = firestore()
       .collection('users')
       .doc(authorization.elderly)
       .collection('water_reminder')
 
     const [userElderly, docSnap] = await Promise.all([
       this.usersService.getElderlyById(authorization.elderly),
-      docRef.get(),
+      colRef.get(),
     ])
 
     if (!docSnap.empty || userElderly == null)
       throw new UnprocessableException()
 
-    const dataToSave: WaterReminder = {
+    const dataToSave: Omit<WaterReminder, 'id'> = {
       start,
       end,
       interval,
@@ -59,7 +55,7 @@ class WaterReminderService implements IWaterReminderService {
       reminders,
     }
 
-    const addReq = docRef.add(dataToSave)
+    const addReq = colRef.add(dataToSave)
 
     const { ask_user_id, id: elderlyId } = userElderly
 
@@ -80,8 +76,8 @@ class WaterReminderService implements IWaterReminderService {
       })
     }
 
-    await Promise.all([addReq, amazonReq])
-    return dataToSave
+    const [docRef, _] = await Promise.all([addReq, amazonReq])
+    return { ...dataToSave, id: docRef.id }
   }
 
   get = async ({
@@ -89,13 +85,9 @@ class WaterReminderService implements IWaterReminderService {
   }: {
     userId: string
   }): Promise<WaterReminder | null> => {
-    const authorization = await this.authorizationService.get({
-      usersType: 'user',
-      usersTypeId: userId,
+    const authorization = await this.authorizationService.checkIsAuthorized({
+      userId,
     })
-
-    if (!authorization)
-      throw new NotFoundException('Autorização não encontrada')
 
     const docRefUser = firestore()
       .collection('users')
@@ -115,14 +107,11 @@ class WaterReminderService implements IWaterReminderService {
     const amount = data.amount ? parseInt(data.amount) : null
     const active = data.active ?? null
     const reminders = data.reminders
+    const userId = data.userId
 
-    const authorization = await this.authorizationService.get({
-      usersType: 'user',
-      usersTypeId: data.userId,
+    const authorization = await this.authorizationService.checkIsAuthorized({
+      userId,
     })
-
-    if (!authorization)
-      throw new NotFoundException('Autorização não encontrada')
 
     const docRef = firestore()
       .collection('users')
@@ -140,7 +129,7 @@ class WaterReminderService implements IWaterReminderService {
 
     const docData = docSnap.data() as WaterReminder
 
-    const dataToUpdate: WaterReminder = {
+    const dataToUpdate: Omit<WaterReminder, 'id'> = {
       start: start ?? docData.start,
       end: end ?? docData.end,
       amount: amount ?? docData.amount,
@@ -180,16 +169,15 @@ class WaterReminderService implements IWaterReminderService {
     }
 
     await Promise.all([updateReq, amazonReq])
-    return dataToUpdate
+    return { ...dataToUpdate, id: docData.id }
   }
 
   addHistory = async ({
     elderlyId,
     suggested_amount,
   }: AddNotificationParams): Promise<WaterHistory> => {
-    const authorization = await this.authorizationService.get({
-      usersType: 'elderly',
-      usersTypeId: elderlyId,
+    const authorization = await this.authorizationService.getByElderly({
+      elderlyId,
     })
 
     if (!authorization)
@@ -217,13 +205,12 @@ class WaterReminderService implements IWaterReminderService {
   }
 
   getRecentHistory = async ({
-    userId,
+    elderlyId,
   }: {
-    userId: string
+    elderlyId: string
   }): Promise<WaterHistory | null> => {
-    const authorization = await this.authorizationService.get({
-      usersType: 'elderly',
-      usersTypeId: userId,
+    const authorization = await this.authorizationService.getByElderly({
+      elderlyId,
     })
 
     if (!authorization)
@@ -248,11 +235,10 @@ class WaterReminderService implements IWaterReminderService {
   async setAmountHistory({
     id,
     amount,
-    userId,
+    elderlyId,
   }: AmountHistoryParams): Promise<void> {
-    const authorization = await this.authorizationService.get({
-      usersType: 'elderly',
-      usersTypeId: userId,
+    const authorization = await this.authorizationService.getByElderly({
+      elderlyId,
     })
 
     if (!authorization)

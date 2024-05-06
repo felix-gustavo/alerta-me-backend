@@ -15,6 +15,7 @@ type AddNotificationParams = {
 }
 
 type WaterReminder = {
+  id: string
   start: number
   end: number
   interval: number
@@ -33,7 +34,7 @@ type WaterHistory = {
 type AmountHistoryParams = {
   id: string
   amount: number | null
-  userId: string
+  elderlyId: string
 }
 
 type UpdateWaterReminderParams = Pick<
@@ -47,7 +48,7 @@ type IWaterReminderService = {
   get(data: { userId: string }): Promise<WaterReminder | null>
   update(data: UpdateWaterReminderParams): Promise<WaterReminder>
   addHistory(data: AddNotificationParams): Promise<WaterHistory>
-  getRecentHistory(data: { userId: string }): Promise<WaterHistory | null>
+  getRecentHistory(data: { elderlyId: string }): Promise<WaterHistory | null>
   setAmountHistory(data: AmountHistoryParams): Promise<void>
 }
 

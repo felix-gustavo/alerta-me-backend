@@ -1,3 +1,4 @@
+import crypto from 'crypto'
 import { NextFunction, Request, Response, Router } from 'express'
 import { handleValidationErrors } from '../../validations/handleValidationErrors'
 import { WaterReminderController } from '../../controllers/waterReminderController'
@@ -22,7 +23,12 @@ class WaterReminderRoute {
       AddNotificationWaterValidateScheme,
       handleValidationErrors,
       (req: Request, _: Response, next: NextFunction) => {
-        if (req.headers.authorization === process.env.SECRET) return next()
+        const expectedHash = crypto
+          .createHmac('sha256', process.env.SECRET ?? '')
+          .update(process.env.DATA_SECRET ?? '')
+          .digest('hex')
+
+        if (req.headers.secret === expectedHash) return next()
         throw new ForbiddenException()
       },
       this.controller.addHistory

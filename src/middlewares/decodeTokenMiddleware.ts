@@ -31,12 +31,6 @@ const decodeAmazonTokenMiddleware = async (
       })
     ).data as UserProfile
 
-    // const user = await UsersService.getInstance().getByEmailAndType({
-    //   email: userData.email ?? '',
-    //   isElderly: true,
-    // })
-    // if (!user) throw new UnauthorizedException('Usuário não encontrado')
-
     req.user = userData
     return next()
   } catch (error: unknown) {
@@ -60,11 +54,6 @@ const decodeFirebaseTokenMiddleware = async (
     const token = authorizationHeader.split('Bearer ')[1]
     const decodedToken = await auth().verifyIdToken(token)
 
-    // const user = await UsersService.getInstance().getByEmailAndType({
-    //   email: decodedToken.email ?? '',
-    //   isElderly: false,
-    // })
-    // if (!user) throw new UnauthorizedException('Usuário não encontrado')
     req.user = {
       user_id: decodedToken.uid,
       name: decodedToken.name,

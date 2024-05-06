@@ -59,7 +59,7 @@ class UsersService implements IUsersService {
 
     if (snapshot.empty) return null
 
-    const firstDoc = snapshot.docs[0].data()
+    const firstDoc = snapshot.docs[0]
     const userData = firstDoc.data() as Omit<UserElderly, 'id'>
 
     return {
@@ -110,7 +110,6 @@ class UsersService implements IUsersService {
     const dataToUpdate = {
       name: data.name,
       email: data.email,
-      is_elderly: data.is_elderly,
       ask_user_id: data.ask_user_id,
     }
 
@@ -123,6 +122,35 @@ class UsersService implements IUsersService {
     await docSnap.ref.update(dataToUpdate)
 
     return data.id
+  }
+
+  async proactiveSubAccepted(data: {
+    elderlyId: string
+    ask_user_id: string
+  }): Promise<string> {
+    const docSnap = await firestore()
+      .collection('users')
+      .doc(data.elderlyId)
+      .get()
+    const docData = docSnap.data()
+
+    if (!docData) throw new NotFoundException('Usuário não encontrado')
+
+    await docSnap.ref.update({ ask_user_id: data.ask_user_id })
+    return data.elderlyId
+  }
+
+  async proactiveSubDisabled(data: { elderlyId: string }): Promise<string> {
+    const docSnap = await firestore()
+      .collection('users')
+      .doc(data.elderlyId)
+      .get()
+    const docData = docSnap.data()
+
+    if (!docData) throw new NotFoundException('Usuário não encontrado')
+
+    await docSnap.ref.update({ ask_user_id: null })
+    return data.elderlyId
   }
 
   async delete({ userId }: { userId: string }): Promise<string> {

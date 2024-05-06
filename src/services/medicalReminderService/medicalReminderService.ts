@@ -21,13 +21,9 @@ class MedicalReminderService implements IMedicalReminderService {
     ...data
   }: CreateMedicalReminderParams): Promise<MedicalReminder> => {
     const date = new Date(data.date)
-    const authorization = await this.authorizationService.get({
-      usersType: 'user',
-      usersTypeId: userId,
+    const authorization = await this.authorizationService.checkIsAuthorized({
+      userId,
     })
-
-    if (!authorization)
-      throw new NotFoundException('Autorização não encontrada')
 
     const docRefUser = firestore()
       .collection('users')
@@ -57,13 +53,9 @@ class MedicalReminderService implements IMedicalReminderService {
     userId,
     withPast,
   }: GetMedicalReminderParams): Promise<MedicalReminder[] | null> => {
-    const authorization = await this.authorizationService.get({
-      usersType: 'user',
-      usersTypeId: userId,
+    const authorization = await this.authorizationService.checkIsAuthorized({
+      userId,
     })
-
-    if (!authorization)
-      throw new NotFoundException('Autorização não encontrada')
 
     const docRefUser = firestore()
       .collection('users')
@@ -93,20 +85,18 @@ class MedicalReminderService implements IMedicalReminderService {
     return response
   }
 
-  update = async (
-    data: UpdateMedicalReminderParams
-  ): Promise<MedicalReminder> => {
+  update = async ({
+    userId,
+    ...data
+  }: UpdateMedicalReminderParams): Promise<MedicalReminder> => {
     const datetime = data.date ? new Date(data.date) : null
     const medic_name = data.medic_name ?? null
     const specialty = data.specialty ?? null
     const address = data.address ?? null
-    const authorization = await this.authorizationService.get({
-      usersType: 'user',
-      usersTypeId: data.userId,
-    })
 
-    if (!authorization)
-      throw new NotFoundException('Autorização não encontrada')
+    const authorization = await this.authorizationService.checkIsAuthorized({
+      userId,
+    })
 
     const docRefUser = firestore()
       .collection('users')
@@ -148,13 +138,9 @@ class MedicalReminderService implements IMedicalReminderService {
     id,
     userId,
   }: DeleteMedicalReminderParams): Promise<void> => {
-    const authorization = await this.authorizationService.get({
-      usersType: 'user',
-      usersTypeId: userId,
+    const authorization = await this.authorizationService.checkIsAuthorized({
+      userId,
     })
-
-    if (!authorization)
-      throw new NotFoundException('Autorização não encontrada')
 
     const docRefUser = firestore()
       .collection('users')

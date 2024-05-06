@@ -25,7 +25,9 @@ class AuthorizationController {
 
   getAuthorizationByElderly = async (req: CustomRequest, res: Response) => {
     const elderlyId = req.user?.user_id as string
-    res.json(this.authorizationService.getByElderly({ elderlyId }))
+    const response = await this.authorizationService.getByElderly({ elderlyId })
+
+    res.json(response)
   }
 
   approvedAuthorizationElderly = async (req: CustomRequest, res: Response) => {

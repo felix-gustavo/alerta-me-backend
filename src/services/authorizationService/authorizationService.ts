@@ -1,7 +1,12 @@
-import { NotFoundException, UnauthorizedException } from '../../exceptions'
+import {
+  UnprocessableException,
+  NotFoundException,
+  UnauthorizedException,
+} from '../../exceptions'
 import { IUsersService } from '../usersService/iUsersService'
 import {
   Authorization,
+  AuthorizationStatus,
   CreateAuthorizationParams,
   IAuthorizationService,
   UpdateAuthorizationParams,
@@ -16,18 +21,28 @@ class AuthorizationService implements IAuthorizationService {
     userId,
   }: CreateAuthorizationParams): Promise<Authorization> {
     const elderlyUser = await this.usersService.getByEmail({ email })
-
     if (!elderlyUser) throw new NotFoundException('Idoso não encontrado')
 
-    const data: Omit<Authorization, 'id'> = {
+    const authorization = await this.getByElderly({ elderlyId: elderlyUser.id })
+    if (authorization?.status === 'aprovado')
+      throw new UnprocessableException('Usuário idoso já possui um cuidador')
+
+    const status: AuthorizationStatus = 'aguardando'
+
+    const data = {
       user: userId,
       elderly: elderlyUser.id,
-      status: 'aguardando',
+      status,
+      datetime: new Date(),
     }
+
     const docRef = await firestore().collection('authorizations').add(data)
     return {
-      ...data,
       id: docRef.id,
+      datetime: data.datetime.toISOString(),
+      elderly: data.elderly,
+      user: data.user,
+      status,
     }
   }
 
@@ -36,22 +51,24 @@ class AuthorizationService implements IAuthorizationService {
   }: {
     elderlyId: string
   }): Promise<Authorization | null> {
-    const myQuery = firestore()
+    const query = firestore()
       .collection('authorizations')
+      .orderBy('datetime', 'desc')
       .where('elderly', '==', elderlyId)
 
-    const snapshot = await myQuery.get()
+    const snapshot = await query.get()
     if (snapshot.empty) return null
 
     const queryDocumentSnapshot = snapshot.docs[0]
-    const docData = queryDocumentSnapshot.data()
+    const data = queryDocumentSnapshot.data()
 
     return {
       id: queryDocumentSnapshot.id,
-      elderly: docData.elderly,
-      status: docData.status,
-      user: docData.user,
-    }
+      elderly: data.elderly,
+      status: data.status,
+      user: data.user,
+      datetime: (data.datetime as firestore.Timestamp).toDate().toISOString(),
+    } as Authorization
   }
 
   async getByUser({
@@ -59,22 +76,23 @@ class AuthorizationService implements IAuthorizationService {
   }: {
     userId: string
   }): Promise<Authorization | null> {
-    const myQuery = firestore()
+    const query = firestore()
       .collection('authorizations')
       .where('user', '==', userId)
 
-    const snapshot = await myQuery.get()
+    const snapshot = await query.get()
     if (snapshot.empty) return null
 
     const queryDocumentSnapshot = snapshot.docs[0]
-    const docData = queryDocumentSnapshot.data()
+    const data = queryDocumentSnapshot.data()
 
     return {
       id: queryDocumentSnapshot.id,
-      elderly: docData.elderly,
-      status: docData.status,
-      user: docData.user,
-    }
+      elderly: data.elderly,
+      status: data.status,
+      user: data.user,
+      datetime: (data.datetime as firestore.Timestamp).toDate().toISOString(),
+    } as Authorization
   }
 
   async updateStatus({
@@ -97,17 +115,29 @@ class AuthorizationService implements IAuthorizationService {
   }
 
   async delete({ userId }: { userId: string }): Promise<string> {
-    const myQuery = firestore()
+    const query = firestore()
       .collection('authorizations')
       .where('user', '==', userId)
 
-    const snapshot = await myQuery.get()
+    const snapshot = await query.get()
     if (snapshot.empty) throw new NotFoundException('Documento não encontrado')
 
     const queryDocumentSnapshot = snapshot.docs[0]
     const id = queryDocumentSnapshot.id
     await queryDocumentSnapshot.ref.delete()
     return id
+  }
+
+  async checkIsAuthorized({
+    userId,
+  }: {
+    userId: string
+  }): Promise<Authorization> {
+    const authorization = await this.getByUser({ userId })
+    if (!authorization || authorization.status === 'aguardando')
+      throw new UnauthorizedException()
+
+    return authorization
   }
 }
 

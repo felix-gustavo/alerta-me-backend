@@ -3,13 +3,14 @@ interface CreateAuthorizationParams {
   userId: string
 }
 
-type AuthorizationStatus = 'aprovado' | 'aguardando' | 'negado'
+type AuthorizationStatus = 'aprovado' | 'aguardando'
 
 interface Authorization {
   id: string
   elderly: string
   status: AuthorizationStatus
   user: string
+  datetime: string
 }
 
 type UpdateAuthorizationParams = {
@@ -24,6 +25,7 @@ interface IAuthorizationService {
   getByUser(data: { userId: string }): Promise<Authorization | null>
   updateStatus(data: UpdateAuthorizationParams): Promise<void>
   delete(data: { userId: string }): Promise<string>
+  checkIsAuthorized(data: { userId: string }): Promise<Authorization>
 }
 
 export {

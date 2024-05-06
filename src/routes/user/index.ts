@@ -2,7 +2,6 @@ import { NextFunction, Response, Router } from 'express'
 import { handleValidationErrors } from '../../validations/handleValidationErrors'
 import { UsersController } from '../../controllers/usersController'
 import { idParamValidateScheme } from '../../validations/schemes/idParamValidateScheme'
-import { createUserValidateScheme } from '../../validations/schemes/createUserValidate'
 import {
   CustomRequest,
   decodeFirebaseTokenMiddleware,
@@ -17,13 +16,6 @@ class UserRoute {
 
   routes = (): Router => {
     const userRoute = Router()
-
-    // userRoute.post(
-    //   '/',
-    //   createUserValidateScheme,
-    //   handleValidationErrors,
-    //   this.controller.create
-    // )
 
     userRoute.post(
       '/elderly',

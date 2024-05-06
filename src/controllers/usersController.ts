@@ -6,29 +6,10 @@ import {
   UserElderly,
 } from '../services/usersService/iUsersService'
 import { CustomRequest } from '../middlewares/decodeTokenMiddleware'
-import {
-  NotFoundException,
-  UnauthorizedException,
-  UnprocessableException,
-  WithoutTokenException,
-} from '../exceptions'
+import { NotFoundException } from '../exceptions'
 
 class UsersController {
   constructor(private readonly userService: IUsersService) {}
-
-  // create = async (req: Request, res: Response) => {
-  //   const data: CreateUsers = req.body
-
-  //   res.json(
-  //     await this.userService.create({
-  //       id: data.id,
-  //       name: data.name,
-  //       email: data.email,
-  //       is_elderly: data.is_elderly,
-  //       ask_user_id: data.ask_user_id ?? null,
-  //     })
-  //   )
-  // }
 
   createElderly = async (req: CustomRequest, res: Response) => {
     const user = req.user as UserProfile
@@ -38,7 +19,6 @@ class UsersController {
         id: user.user_id,
         name: user.name,
         email: user.email,
-        is_elderly: true,
         ask_user_id: null,
       })
     )
@@ -65,38 +45,23 @@ class UsersController {
     res.json(user)
   }
 
-  // accountLinked = async (req: CustomRequest, res: Response) => {
-  //   const userId = req.user?.user_id
-  //   if (!userId) throw new WithoutTokenException()
-
-  //   await this.userService.update({
-  //     id: userId,
-  //     ask_user_id: req.body.ask_user_id,
-  //   })
-
-  //   res.json({ userId })
-  // }
-
   proactiveSubAccepted = async (req: CustomRequest, res: Response) => {
-    const userId = req.user?.user_id as string
+    const elderlyId = req.user?.user_id as string
+    const ask_user_id = req.body.ask_user_id
 
-    await this.userService.update({
-      id: userId,
-      ask_user_id: req.body.ask_user_id,
+    const response = await this.userService.proactiveSubAccepted({
+      elderlyId,
+      ask_user_id,
     })
 
-    res.json({ userId })
+    res.json({ response })
   }
 
   proactiveSubDisabled = async (req: CustomRequest, res: Response) => {
-    const userId = req.user?.user_id as string
+    const elderlyId = req.user?.user_id as string
+    const response = await this.userService.proactiveSubDisabled({ elderlyId })
 
-    await this.userService.update({
-      id: userId,
-      ask_user_id: null,
-    })
-
-    res.json({ userId })
+    res.json({ response })
   }
 
   delete = async (req: CustomRequest, res: Response) => {

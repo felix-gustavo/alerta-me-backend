@@ -51,13 +51,9 @@ class MedicationReminderService implements IMedicationReminderService {
     userId,
     ...data
   }: CreateMedicationReminderParams): Promise<MedicationReminder> => {
-    const authorization = await this.authorizationService.get({
-      usersType: 'user',
-      usersTypeId: userId,
+    const authorization = await this.authorizationService.checkIsAuthorized({
+      userId,
     })
-
-    if (!authorization)
-      throw new NotFoundException('Autorização não encontrada')
 
     const colRef = firestore()
       .collection('users')
@@ -83,13 +79,9 @@ class MedicationReminderService implements IMedicationReminderService {
   get = async ({
     userId,
   }: GetMedicationReminderParams): Promise<MedicationReminder[] | null> => {
-    const authorization = await this.authorizationService.get({
-      usersType: 'user',
-      usersTypeId: userId,
+    const authorization = await this.authorizationService.checkIsAuthorized({
+      userId,
     })
-
-    if (!authorization)
-      throw new NotFoundException('Autorização não encontrada')
 
     const colRef = firestore()
       .collection('users')
@@ -116,16 +108,13 @@ class MedicationReminderService implements IMedicationReminderService {
     return response
   }
 
-  update = async (
-    data: UpdateMedicationReminderParams
-  ): Promise<MedicationReminder> => {
-    const authorization = await this.authorizationService.get({
-      usersType: 'user',
-      usersTypeId: data.userId,
+  update = async ({
+    userId,
+    ...data
+  }: UpdateMedicationReminderParams): Promise<MedicationReminder> => {
+    const authorization = await this.authorizationService.checkIsAuthorized({
+      userId,
     })
-
-    if (!authorization)
-      throw new NotFoundException('Autorização não encontrada')
 
     const docRefUser = firestore()
       .collection('users')
@@ -171,13 +160,9 @@ class MedicationReminderService implements IMedicationReminderService {
     id,
     userId,
   }: DeleteMedicationReminderParams): Promise<void> => {
-    const authorization = await this.authorizationService.get({
-      usersType: 'user',
-      usersTypeId: userId,
+    const authorization = await this.authorizationService.checkIsAuthorized({
+      userId,
     })
-
-    if (!authorization)
-      throw new NotFoundException('Autorização não encontrada')
 
     const docRefUser = firestore()
       .collection('users')
