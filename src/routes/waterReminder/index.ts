@@ -23,11 +23,18 @@ class WaterReminderRoute {
       AddNotificationWaterValidateScheme,
       handleValidationErrors,
       (req: Request, _: Response, next: NextFunction) => {
+        const secret = process.env.SECRET ?? ''
+        const dataSecret = process.env.DATA_SECRET ?? ''
+
         const expectedHash = crypto
-          .createHmac('sha256', process.env.SECRET ?? '')
-          .update(process.env.DATA_SECRET ?? '')
+          .createHmac('sha256', secret)
+          .update(dataSecret)
           .digest('hex')
 
+        console.log(`secret: ${secret} :::::: dataSecret: ${dataSecret}`)
+        console.log(
+          `req.headers.secret: ${req.headers.secret} :::::: expectedHash: ${expectedHash}`
+        )
         if (req.headers.secret === expectedHash) return next()
         throw new ForbiddenException()
       },
