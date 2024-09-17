@@ -1,6 +1,6 @@
+import { CustomRequest } from '../middlewares/decodeTokenMiddleware.ts'
+import { IProactiveService } from '../services/proactiveService/iProactiveService.ts'
 import { Response } from 'express'
-import { CustomRequest } from '../middlewares/decodeTokenMiddleware'
-import { IProactiveService } from '../services/proactiveService/iProactiveService'
 
 class ProactiveController {
   constructor(private readonly proactiveService: IProactiveService) {}

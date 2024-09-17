@@ -1,11 +1,11 @@
 import { Router } from 'express'
-import { handleValidationErrors } from '../../validations/handleValidationErrors'
-import { WaterReminderController } from '../../controllers/waterReminderController'
-import { createWaterValidate } from '../../validations/schemes/createWaterValidate'
-import { updateWaterValidate } from '../../validations/schemes/updateWaterValidate'
-import { decodeFirebaseTokenMiddleware } from '../../middlewares/decodeTokenMiddleware'
-import { WaterHistoryRoute } from './waterHistory'
-import { WaterReminderHistoryController } from '../../controllers/waterReminderHistoryController'
+import { WaterHistoryRoute } from './waterHistory/index.ts'
+import { WaterReminderController } from '../../controllers/waterReminderController.ts'
+import { WaterReminderHistoryController } from '../../controllers/waterReminderHistoryController.ts'
+import { createWaterValidate } from '../../validations/schemes/createWaterValidate.ts'
+import { decodeFirebaseTokenMiddleware } from '../../middlewares/decodeTokenMiddleware.ts'
+import { handleValidationErrors } from '../../validations/handleValidationErrors.ts'
+import { updateWaterValidate } from '../../validations/schemes/updateWaterValidate.ts'
 
 class WaterReminderRoute {
   constructor(

@@ -1,5 +1,5 @@
 import { body } from 'express-validator'
-import { paramValidateScheme } from './paramValidateScheme'
+import { paramValidateScheme } from './paramValidateScheme.ts'
 
 const updateMedicalValidate = [
   ...paramValidateScheme('id'),

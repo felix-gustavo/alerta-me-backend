@@ -1,10 +1,10 @@
-import { Response, Request } from 'express'
 import {
   IUsersService,
   UserProfile,
-} from '../services/usersService/iUsersService'
-import { CustomRequest } from '../middlewares/decodeTokenMiddleware'
-import { NotFoundException } from '../exceptions'
+} from '../services/usersService/iUsersService.ts'
+import { Request, Response } from 'express'
+import { CustomRequest } from '../middlewares/decodeTokenMiddleware.ts'
+import { NotFoundException } from '../exceptions/index.ts'
 
 class UsersController {
   constructor(private readonly userService: IUsersService) {}

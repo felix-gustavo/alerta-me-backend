@@ -1,9 +1,9 @@
-import { Response, Request } from 'express'
-import { CustomRequest } from '../middlewares/decodeTokenMiddleware'
 import {
   AddNotificationParams,
   IWaterHistoryService,
-} from '../services/waterHistoryService/iWaterHistoryService'
+} from '../services/waterHistoryService/iWaterHistoryService.ts'
+import { Request, Response } from 'express'
+import { CustomRequest } from '../middlewares/decodeTokenMiddleware.ts'
 
 class WaterReminderHistoryController {
   constructor(private readonly waterHistoryService: IWaterHistoryService) {}

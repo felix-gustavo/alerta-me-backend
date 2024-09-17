@@ -1,6 +1,6 @@
-import { INotifications } from '../iNotifications'
-import { IUsersService } from '../usersService/iUsersService'
-import { IProactiveService } from './iProactiveService'
+import { INotifications } from '../iNotifications.ts'
+import { IProactiveService } from './iProactiveService.ts'
+import { IUsersService } from '../usersService/iUsersService.ts'
 
 class ProactiveService implements IProactiveService {
   constructor(

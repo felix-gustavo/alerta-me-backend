@@ -1,8 +1,8 @@
+import { ProactiveController } from '../../controllers/proactiveController.ts'
 import { Router } from 'express'
-import { decodeAmazonTokenMiddleware } from '../../middlewares/decodeTokenMiddleware'
 import { body } from 'express-validator'
-import { handleValidationErrors } from '../../validations/handleValidationErrors'
-import { ProactiveController } from '../../controllers/proactiveController'
+import { decodeAmazonTokenMiddleware } from '../../middlewares/decodeTokenMiddleware.ts'
+import { handleValidationErrors } from '../../validations/handleValidationErrors.ts'
 
 class ProactiveRoute {
   constructor(private readonly controller: ProactiveController) {}

@@ -1,10 +1,10 @@
+import { MedicalReminderController } from '../../controllers/medicalReminderController.ts'
 import { Router } from 'express'
-import { handleValidationErrors } from '../../validations/handleValidationErrors'
-import { MedicalReminderController } from '../../controllers/medicalReminderController'
-import { createMedicalValidate } from '../../validations/schemes/createMedicalValidate'
-import { updateMedicalValidate } from '../../validations/schemes/updateMedicalValidate'
-import { paramValidateScheme } from '../../validations/schemes/paramValidateScheme'
-import { getMedicalValidate } from '../../validations/schemes/getMedicalValidate'
+import { createMedicalValidate } from '../../validations/schemes/createMedicalValidate.ts'
+import { getMedicalValidate } from '../../validations/schemes/getMedicalValidate.ts'
+import { handleValidationErrors } from '../../validations/handleValidationErrors.ts'
+import { paramValidateScheme } from '../../validations/schemes/paramValidateScheme.ts'
+import { updateMedicalValidate } from '../../validations/schemes/updateMedicalValidate.ts'
 
 class MedicalReminderRoute {
   constructor(private readonly controller: MedicalReminderController) {}

@@ -1,4 +1,4 @@
-import { INotifications } from '../iNotifications'
+import { INotifications } from '../iNotifications.ts'
 
 type WaterReminder = {
   id: string

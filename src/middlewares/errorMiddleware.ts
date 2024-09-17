@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { CustomError } from '../exceptions/customError'
+import { CustomError } from '../exceptions/customError.ts'
 
 export const errorMiddleware = (
   error: CustomError,

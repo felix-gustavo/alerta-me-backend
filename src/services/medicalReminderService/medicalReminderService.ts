@@ -1,22 +1,22 @@
-import { IAuthorizationService } from '../authorizationService/iAuthorizationService'
 import {
-  MedicalReminderParams,
   CreateMedicalReminderStringParams,
   DeleteMedicalReminderParams,
   GetMedicalReminderParams,
   IMedicalReminderService,
   MedicalReminder,
+  MedicalReminderParams,
   UpdateMedicalReminderParams,
-} from './iMedicalReminderService'
+} from './iMedicalReminderService.ts'
 import {
   NotFoundException,
   NotificationDeniedException,
   UnprocessableException,
   ValidationException,
-} from '../../exceptions'
-import { getFirestore, Timestamp } from 'firebase-admin/firestore'
-import { IUsersService } from '../usersService/iUsersService'
-import { MedicalScheduler } from '../amazonSchedulers/medicalScheduler'
+} from '../../exceptions/index.ts'
+import { Timestamp, getFirestore } from 'firebase-admin/firestore'
+import { IAuthorizationService } from '../authorizationService/iAuthorizationService.ts'
+import { IUsersService } from '../usersService/iUsersService.ts'
+import { MedicalScheduler } from '../amazonSchedulers/medicalScheduler.ts'
 import { isBefore } from 'date-fns'
 
 class MedicalReminderService implements IMedicalReminderService {

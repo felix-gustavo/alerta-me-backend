@@ -1,12 +1,12 @@
-import { Router } from 'express'
-import { AuthorizationController } from '../../controllers/authorizationController'
-import { handleValidationErrors } from '../../validations/handleValidationErrors'
-import { createAuthorizationValidateScheme } from '../../validations/schemes/createAuthorizationValidate'
 import {
   decodeAmazonTokenMiddleware,
   decodeFirebaseTokenMiddleware,
-} from '../../middlewares/decodeTokenMiddleware'
-import { paramValidateScheme } from '../../validations/schemes/paramValidateScheme'
+} from '../../middlewares/decodeTokenMiddleware.ts'
+import { AuthorizationController } from '../../controllers/authorizationController.ts'
+import { Router } from 'express'
+import { createAuthorizationValidateScheme } from '../../validations/schemes/createAuthorizationValidate.ts'
+import { handleValidationErrors } from '../../validations/handleValidationErrors.ts'
+import { paramValidateScheme } from '../../validations/schemes/paramValidateScheme.ts'
 
 class AuthorizationRoute {
   constructor(private readonly controller: AuthorizationController) {}

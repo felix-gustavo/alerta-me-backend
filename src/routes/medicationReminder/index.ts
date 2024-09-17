@@ -1,9 +1,9 @@
+import { MedicationReminderController } from '../../controllers/medicationReminderController.ts'
 import { Router } from 'express'
-import { handleValidationErrors } from '../../validations/handleValidationErrors'
-import { createMedicationValidate } from '../../validations/schemes/createMedicationValidate'
-import { MedicationReminderController } from '../../controllers/medicationReminderController'
-import { updateMedicationValidate } from '../../validations/schemes/updateMedicationValidate'
-import { paramValidateScheme } from '../../validations/schemes/paramValidateScheme'
+import { createMedicationValidate } from '../../validations/schemes/createMedicationValidate.ts'
+import { handleValidationErrors } from '../../validations/handleValidationErrors.ts'
+import { paramValidateScheme } from '../../validations/schemes/paramValidateScheme.ts'
+import { updateMedicationValidate } from '../../validations/schemes/updateMedicationValidate.ts'
 
 class MedicationReminderRoute {
   constructor(private readonly controller: MedicationReminderController) {}

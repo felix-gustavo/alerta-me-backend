@@ -1,12 +1,12 @@
-import { NextFunction, Response, Router } from 'express'
-import { handleValidationErrors } from '../../validations/handleValidationErrors'
-import { UsersController } from '../../controllers/usersController'
-import { paramValidateScheme } from '../../validations/schemes/paramValidateScheme'
 import {
   CustomRequest,
-  decodeFirebaseTokenMiddleware,
   decodeAmazonTokenMiddleware,
-} from '../../middlewares/decodeTokenMiddleware'
+  decodeFirebaseTokenMiddleware,
+} from '../../middlewares/decodeTokenMiddleware.ts'
+import { NextFunction, Response, Router } from 'express'
+import { UsersController } from '../../controllers/usersController.ts'
+import { handleValidationErrors } from '../../validations/handleValidationErrors.ts'
+import { paramValidateScheme } from '../../validations/schemes/paramValidateScheme.ts'
 
 class UserRoute {
   constructor(private readonly controller: UsersController) {}

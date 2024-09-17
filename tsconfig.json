@@ -1,7 +1,10 @@
 {
   "compilerOptions": {
-    "module": "ESNext",
-    "target": "ESNext",
+    "allowImportingTsExtensions": true, //this works only with below noEmit set to true
+    "noEmit": true,
+
+    "module": "ES2022",
+    "target": "ES2023",
 
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,

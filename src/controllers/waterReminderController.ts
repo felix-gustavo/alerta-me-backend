@@ -1,10 +1,10 @@
-import { Response } from 'express'
 import {
+  CreateWaterReminderStringParams,
   IWaterReminderService,
   UpdateWaterReminderParams,
-  CreateWaterReminderStringParams,
-} from '../services/waterReminderService/iWaterReminderService'
-import { CustomRequest } from '../middlewares/decodeTokenMiddleware'
+} from '../services/waterReminderService/iWaterReminderService.ts'
+import { CustomRequest } from '../middlewares/decodeTokenMiddleware.ts'
+import { Response } from 'express'
 
 class WaterReminderController {
   constructor(private readonly waterReminderService: IWaterReminderService) {}

@@ -1,6 +1,6 @@
+import { CustomRequest } from '../middlewares/decodeTokenMiddleware.ts'
+import { IAuthorizationService } from '../services/authorizationService/iAuthorizationService.ts'
 import { Response } from 'express'
-import { IAuthorizationService } from '../services/authorizationService/iAuthorizationService'
-import { CustomRequest } from '../middlewares/decodeTokenMiddleware'
 
 class AuthorizationController {
   constructor(private readonly authorizationService: IAuthorizationService) {}

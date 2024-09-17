@@ -1,12 +1,12 @@
-import { getFirestore, Timestamp } from 'firebase-admin/firestore'
-import { UnauthorizedException } from '../../exceptions'
 import {
   AddNotificationParams,
   AmountHistoryParams,
   IWaterHistoryService,
   WaterHistory,
-} from './iWaterHistoryService'
-import { IAuthorizationService } from '../authorizationService/iAuthorizationService'
+} from './iWaterHistoryService.ts'
+import { Timestamp, getFirestore } from 'firebase-admin/firestore'
+import { IAuthorizationService } from '../authorizationService/iAuthorizationService.ts'
+import { UnauthorizedException } from '../../exceptions/index.ts'
 
 class WaterHistoryService implements IWaterHistoryService {
   constructor(private readonly authorizationService: IAuthorizationService) {}

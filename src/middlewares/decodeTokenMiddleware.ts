@@ -1,13 +1,13 @@
-import { Request, Response, NextFunction } from 'express'
+import { NextFunction, Request, Response } from 'express'
 import {
   SessionExpiredException,
   UnauthorizedException,
   WithoutTokenException,
-} from '../exceptions'
-import { FirebaseError } from 'firebase-admin/lib/utils/error'
-import { getAuth } from 'firebase-admin/auth'
-import { UserProfile } from '../services/usersService/iUsersService'
+} from '../exceptions/index.ts'
 import axios, { AxiosError } from 'axios'
+import { FirebaseError } from 'firebase-admin/lib/utils/error'
+import { UserProfile } from '../services/usersService/iUsersService.ts'
+import { getAuth } from 'firebase-admin/auth'
 
 interface CustomRequest extends Request {
   user?: UserProfile

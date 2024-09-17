@@ -1,6 +1,6 @@
+import { AmazonScheduler } from './scheduler.ts'
 import { CreateScheduleCommandInput } from '@aws-sdk/client-scheduler'
-import { AmazonScheduler } from './scheduler'
-import { MedicalReminder } from '../medicalReminderService/iMedicalReminderService'
+import { MedicalReminder } from '../medicalReminderService/iMedicalReminderService.ts'
 import { format } from 'date-fns'
 
 type MedicalSchedulerInput = {

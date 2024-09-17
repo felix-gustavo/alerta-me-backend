@@ -1,15 +1,15 @@
-import crypto from 'crypto'
 import { NextFunction, Request, Response, Router } from 'express'
-import { ForbiddenException } from '../../../exceptions'
-import { handleValidationErrors } from '../../../validations/handleValidationErrors'
-import { AddNotificationWaterValidateScheme } from '../../../validations/schemes/addNotificationWaterValidate'
 import {
   decodeAmazonTokenMiddleware,
   decodeFirebaseTokenMiddleware,
-} from '../../../middlewares/decodeTokenMiddleware'
-import { setHistoryValidateScheme } from '../../../validations/schemes/setHistoryValidade'
-import { WaterReminderHistoryController } from '../../../controllers/waterReminderHistoryController'
-import { getHistoryUserValidate } from '../../../validations/schemes/getHistoryUserValidate'
+} from '../../../middlewares/decodeTokenMiddleware.ts'
+import { AddNotificationWaterValidateScheme } from '../../../validations/schemes/addNotificationWaterValidate.ts'
+import { ForbiddenException } from '../../../exceptions/index.ts'
+import { WaterReminderHistoryController } from '../../../controllers/waterReminderHistoryController.ts'
+import crypto from 'crypto'
+import { getHistoryUserValidate } from '../../../validations/schemes/getHistoryUserValidate.ts'
+import { handleValidationErrors } from '../../../validations/handleValidationErrors.ts'
+import { setHistoryValidateScheme } from '../../../validations/schemes/setHistoryValidade.ts'
 
 class WaterHistoryRoute {
   constructor(private readonly controller: WaterReminderHistoryController) {}

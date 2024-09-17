@@ -1,17 +1,17 @@
 import {
-  UnprocessableException,
-  NotFoundException,
-  UnauthorizedException,
-} from '../../exceptions'
-import { IUsersService } from '../usersService/iUsersService'
-import {
   Authorization,
   AuthorizationStatus,
   CreateAuthorizationParams,
   IAuthorizationService,
   UpdateAuthorizationParams,
-} from './iAuthorizationService'
-import { getFirestore, Timestamp } from 'firebase-admin/firestore'
+} from './iAuthorizationService.ts'
+import {
+  NotFoundException,
+  UnauthorizedException,
+  UnprocessableException,
+} from '../../exceptions/index.ts'
+import { Timestamp, getFirestore } from 'firebase-admin/firestore'
+import { IUsersService } from '../usersService/iUsersService.ts'
 
 class AuthorizationService implements IAuthorizationService {
   constructor(private readonly usersService: IUsersService) {}

@@ -1,5 +1,3 @@
-import { getFirestore } from 'firebase-admin/firestore'
-import { NotFoundException, UnauthorizedException } from '../../exceptions'
 import {
   CreateUsers,
   DeleteElderlyParams,
@@ -7,9 +5,14 @@ import {
   UpdateParams,
   UserElderly,
   UserProfile,
-} from './iUsersService'
-import { AuthorizationService } from '../authorizationService/authorizationService'
+} from './iUsersService.ts'
+import {
+  NotFoundException,
+  UnauthorizedException,
+} from '../../exceptions/index.ts'
+import { AuthorizationService } from '../authorizationService/authorizationService.ts'
 import { getAuth } from 'firebase-admin/auth'
+import { getFirestore } from 'firebase-admin/firestore'
 
 class UsersService implements IUsersService {
   private static instance: UsersService

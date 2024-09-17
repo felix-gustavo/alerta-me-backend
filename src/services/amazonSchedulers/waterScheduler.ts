@@ -1,6 +1,6 @@
+import { AmazonScheduler } from './scheduler.ts'
 import { CreateScheduleCommandInput } from '@aws-sdk/client-scheduler'
 import { addDays } from 'date-fns'
-import { AmazonScheduler } from './scheduler'
 
 type WaterSchedulerInput = {
   interval: number

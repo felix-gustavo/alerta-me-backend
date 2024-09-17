@@ -1,10 +1,10 @@
-import { Response } from 'express'
 import {
   CreateMedicationReminderParams,
   IMedicationReminderService,
   UpdateMedicationReminderParams,
-} from '../services/medicationReminderService/iMedicationReminderService'
-import { CustomRequest } from '../middlewares/decodeTokenMiddleware'
+} from '../services/medicationReminderService/iMedicationReminderService.ts'
+import { CustomRequest } from '../middlewares/decodeTokenMiddleware.ts'
+import { Response } from 'express'
 
 class MedicationReminderController {
   constructor(private service: IMedicationReminderService) {}

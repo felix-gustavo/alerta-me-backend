@@ -1,22 +1,22 @@
-import { DateFormat } from '../../utils/dateFormat'
 import {
-  WaterReminderParams,
   CreateWaterReminderStringParams,
   IWaterReminderService,
   UpdateWaterReminderParams,
   WaterReminder,
-} from './iWaterReminderService'
-import { IAuthorizationService } from '../authorizationService/iAuthorizationService'
+  WaterReminderParams,
+} from './iWaterReminderService.ts'
 import {
   NotificationDeniedException,
   UnprocessableException,
-} from '../../exceptions'
-import { getFirestore } from 'firebase-admin/firestore'
-import { IUsersService } from '../usersService/iUsersService'
+} from '../../exceptions/index.ts'
 import {
   WaterScheduler,
   WaterSchedulerInput,
-} from '../amazonSchedulers/waterScheduler'
+} from '../amazonSchedulers/waterScheduler.ts'
+import { DateFormat } from '../../utils/dateFormat.ts'
+import { IAuthorizationService } from '../authorizationService/iAuthorizationService.ts'
+import { IUsersService } from '../usersService/iUsersService.ts'
+import { getFirestore } from 'firebase-admin/firestore'
 
 type WaterReminderSchedulerInput = {
   elderly: {

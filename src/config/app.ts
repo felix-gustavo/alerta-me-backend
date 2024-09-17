@@ -1,10 +1,10 @@
 import 'dotenv/config'
-import express from 'express'
-import cors from 'cors'
-import * as configRoutes from './configRoutes'
-import { errorMiddleware } from '../middlewares/errorMiddleware'
 import 'express-async-errors'
-import './firebase'
+import './firebase.ts'
+import * as configRoutes from './configRoutes.ts'
+import cors from 'cors'
+import { errorMiddleware } from '../middlewares/errorMiddleware.ts'
+import express from 'express'
 
 const app = express()
 
