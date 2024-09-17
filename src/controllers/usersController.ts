@@ -1,9 +1,7 @@
 import { Response, Request } from 'express'
 import {
-  CreateUsers,
   IUsersService,
   UserProfile,
-  UserElderly,
 } from '../services/usersService/iUsersService'
 import { CustomRequest } from '../middlewares/decodeTokenMiddleware'
 import { NotFoundException } from '../exceptions'

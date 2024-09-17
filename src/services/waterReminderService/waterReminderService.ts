@@ -17,7 +17,6 @@ import {
   WaterScheduler,
   WaterSchedulerInput,
 } from '../amazonSchedulers/waterScheduler'
-import { AmazonScheduler } from '../amazonSchedulers/scheduler'
 
 type WaterReminderSchedulerInput = {
   elderly: {
@@ -88,10 +87,7 @@ class WaterReminderService implements IWaterReminderService {
       })
     }
 
-    const [docRef, _] = await Promise.all([
-      colRef.add(dataToSave),
-      schedulerReq,
-    ])
+    const [docRef] = await Promise.all([colRef.add(dataToSave), schedulerReq])
     return { ...dataToSave, id: docRef.id }
   }
 

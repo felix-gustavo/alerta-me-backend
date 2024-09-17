@@ -7,7 +7,6 @@ import {
   decodeFirebaseTokenMiddleware,
   decodeAmazonTokenMiddleware,
 } from '../../middlewares/decodeTokenMiddleware'
-import { NotFoundException } from '../../exceptions'
 
 class UserRoute {
   constructor(private readonly controller: UsersController) {}

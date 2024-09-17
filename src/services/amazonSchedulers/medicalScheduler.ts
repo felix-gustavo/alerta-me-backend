@@ -1,7 +1,4 @@
-import {
-  UpdateScheduleCommand,
-  CreateScheduleCommandInput,
-} from '@aws-sdk/client-scheduler'
+import { CreateScheduleCommandInput } from '@aws-sdk/client-scheduler'
 import { AmazonScheduler } from './scheduler'
 import { MedicalReminder } from '../medicalReminderService/iMedicalReminderService'
 import { format } from 'date-fns'

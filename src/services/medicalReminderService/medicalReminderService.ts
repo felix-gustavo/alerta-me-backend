@@ -271,7 +271,7 @@ class MedicalReminderService implements IMedicalReminderService {
     return
   }
 
-  async enableNotifications(_: string): Promise<void> {
+  async enableNotifications(): Promise<void> {
     return
     // const reminders = await this.getAllActives({ userId: elderlyId })
 
