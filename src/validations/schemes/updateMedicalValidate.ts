@@ -1,7 +1,8 @@
-import { body, param } from 'express-validator'
+import { body } from 'express-validator'
+import { paramValidateScheme } from './paramValidateScheme'
 
-const updateMedicalReminderValidate = [
-  param('id').notEmpty().withMessage('Campo id é obrigatório'),
+const updateMedicalValidate = [
+  ...paramValidateScheme('id'),
   body('medic_name')
     .optional()
     .isLength({ min: 3, max: 60 })
@@ -28,4 +29,4 @@ const updateMedicalReminderValidate = [
     ),
 ]
 
-export { updateMedicalReminderValidate }
+export { updateMedicalValidate }

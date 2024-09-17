@@ -24,6 +24,17 @@ class UsersController {
     )
   }
 
+  get = async (req: CustomRequest, res: Response) => {
+    const userId = req.user?.user_id as string
+    const isElderly = (req.query.isElderly as string | undefined) === 'true'
+
+    const user = isElderly
+      ? await this.userService.getElderlyById(userId)
+      : await this.userService.getById(userId)
+    if (user == null) throw new NotFoundException('Usuário não encontrado')
+    res.json(user)
+  }
+
   getElderlyById = async (req: Request, res: Response) => {
     const id = req.params.id as string
     const user = await this.userService.getElderlyById(id)
@@ -45,25 +56,6 @@ class UsersController {
     res.json(user)
   }
 
-  proactiveSubAccepted = async (req: CustomRequest, res: Response) => {
-    const elderlyId = req.user?.user_id as string
-    const ask_user_id = req.body.ask_user_id
-
-    const response = await this.userService.proactiveSubAccepted({
-      elderlyId,
-      ask_user_id,
-    })
-
-    res.json({ response })
-  }
-
-  proactiveSubDisabled = async (req: CustomRequest, res: Response) => {
-    const elderlyId = req.user?.user_id as string
-    const response = await this.userService.proactiveSubDisabled({ elderlyId })
-
-    res.json({ response })
-  }
-
   delete = async (req: CustomRequest, res: Response) => {
     const userId = req.user?.user_id as string
 
@@ -72,7 +64,7 @@ class UsersController {
   }
 
   deleteElderly = async (req: CustomRequest, res: Response) => {
-    const { id }: { id: string } = req.body
+    const id = req.params.id as string
     const userId = req.user?.user_id as string
 
     await this.userService.deleteElderly({ elderlyId: id, userId })

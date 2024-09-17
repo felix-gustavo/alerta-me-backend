@@ -4,9 +4,8 @@ import {
   UnauthorizedException,
   WithoutTokenException,
 } from '../exceptions'
-import { UsersService } from '../services/usersService/usersService'
-import { FirebaseError } from '@firebase/util'
-import { auth } from 'firebase-admin'
+import { FirebaseError } from 'firebase-admin/lib/utils/error'
+import { getAuth } from 'firebase-admin/auth'
 import { UserProfile } from '../services/usersService/iUsersService'
 import axios, { AxiosError } from 'axios'
 
@@ -52,7 +51,7 @@ const decodeFirebaseTokenMiddleware = async (
       throw new WithoutTokenException()
 
     const token = authorizationHeader.split('Bearer ')[1]
-    const decodedToken = await auth().verifyIdToken(token)
+    const decodedToken = await getAuth().verifyIdToken(token)
 
     req.user = {
       user_id: decodedToken.uid,

@@ -1,6 +1,6 @@
 import { body } from 'express-validator'
 
-const createWaterReminderValidateScheme = [
+const createWaterValidate = [
   body('start')
     .notEmpty()
     .withMessage('Campo start é obrigatório')
@@ -23,6 +23,9 @@ const createWaterReminderValidateScheme = [
     .withMessage('Campo amount é obrigatório')
     .isNumeric()
     .withMessage('Campo amount precisa ser um número'),
+  body('active')
+    .isBoolean()
+    .withMessage('Campo active deve ser um booleano (true, false)'),
 ]
 
-export { createWaterReminderValidateScheme }
+export { createWaterValidate }

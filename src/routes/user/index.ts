@@ -1,14 +1,12 @@
 import { NextFunction, Response, Router } from 'express'
 import { handleValidationErrors } from '../../validations/handleValidationErrors'
 import { UsersController } from '../../controllers/usersController'
-import { idParamValidateScheme } from '../../validations/schemes/idParamValidateScheme'
+import { paramValidateScheme } from '../../validations/schemes/paramValidateScheme'
 import {
   CustomRequest,
   decodeFirebaseTokenMiddleware,
   decodeAmazonTokenMiddleware,
 } from '../../middlewares/decodeTokenMiddleware'
-import { deleteValidateScheme } from '../../validations/schemes/deleteValidate'
-import { body } from 'express-validator'
 import { NotFoundException } from '../../exceptions'
 
 class UserRoute {
@@ -25,7 +23,7 @@ class UserRoute {
 
     userRoute.get(
       '/elderly/id/:id',
-      idParamValidateScheme,
+      paramValidateScheme('id'),
       handleValidationErrors,
       decodeFirebaseTokenMiddleware,
       this.controller.getElderlyById
@@ -33,7 +31,7 @@ class UserRoute {
 
     userRoute.get(
       '/id/:id',
-      idParamValidateScheme,
+      paramValidateScheme('id'),
       handleValidationErrors,
       (req: CustomRequest, res: Response, next: NextFunction) => {
         const isElderly = (req.query.isElderly as string | undefined) === 'true'
@@ -54,36 +52,14 @@ class UserRoute {
           ? decodeAmazonTokenMiddleware(req, res, next)
           : decodeFirebaseTokenMiddleware(req, res, next)
       },
-      (req: CustomRequest, res: Response) => {
-        if (req.user == null)
-          throw new NotFoundException('Usuário não encontrado')
-        return res.json(req.user)
-      }
-    )
-
-    userRoute.put(
-      '/proactiveSubAccepted',
-      [
-        body('ask_user_id')
-          .isString()
-          .withMessage('Campo ask_user_id deve ser String'),
-      ],
-      handleValidationErrors,
-      decodeAmazonTokenMiddleware,
-      this.controller.proactiveSubAccepted
-    )
-
-    userRoute.put(
-      '/proactiveSubDisabled',
-      decodeAmazonTokenMiddleware,
-      this.controller.proactiveSubDisabled
+      this.controller.get
     )
 
     userRoute.delete('/', decodeFirebaseTokenMiddleware, this.controller.delete)
 
     userRoute.delete(
-      '/elderly',
-      deleteValidateScheme,
+      '/elderly/:id',
+      paramValidateScheme('id'),
       handleValidationErrors,
       decodeFirebaseTokenMiddleware,
       this.controller.deleteElderly

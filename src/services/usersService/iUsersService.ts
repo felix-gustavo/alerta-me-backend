@@ -41,11 +41,6 @@ interface IUsersService {
   getById(id: string): Promise<UserProfile | null>
   getByEmail({ email }: { email: string }): Promise<UserElderly | null>
   update(data: UpdateParams): Promise<string>
-  proactiveSubAccepted(data: {
-    elderlyId: string
-    ask_user_id: string
-  }): Promise<string>
-  proactiveSubDisabled(data: { elderlyId: string }): Promise<string>
   delete(data: { userId: string }): Promise<string>
   deleteElderly(data: DeleteElderlyParams): Promise<string>
 }

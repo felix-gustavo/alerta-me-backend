@@ -1,9 +1,9 @@
 import { Router } from 'express'
 import { handleValidationErrors } from '../../validations/handleValidationErrors'
-import { createMedicationReminderValidateScheme } from '../../validations/schemes/createMedicationReminderValidate'
+import { createMedicationValidate } from '../../validations/schemes/createMedicationValidate'
 import { MedicationReminderController } from '../../controllers/medicationReminderController'
-import { updateMedicationReminderValidate } from '../../validations/schemes/updateMedicationReminderValidate'
-import { deleteReminderValidate } from '../../validations/schemes/deleteReminderValidate'
+import { updateMedicationValidate } from '../../validations/schemes/updateMedicationValidate'
+import { paramValidateScheme } from '../../validations/schemes/paramValidateScheme'
 
 class MedicationReminderRoute {
   constructor(private readonly controller: MedicationReminderController) {}
@@ -13,20 +13,20 @@ class MedicationReminderRoute {
 
     medicationReminderRoute.post(
       '/',
-      createMedicationReminderValidateScheme,
+      createMedicationValidate,
       handleValidationErrors,
       this.controller.create
     )
     medicationReminderRoute.get('/', this.controller.get)
     medicationReminderRoute.put(
       '/:id',
-      updateMedicationReminderValidate,
+      updateMedicationValidate,
       handleValidationErrors,
       this.controller.update
     )
     medicationReminderRoute.delete(
       '/:id',
-      deleteReminderValidate,
+      paramValidateScheme('id'),
       handleValidationErrors,
       this.controller.delete
     )

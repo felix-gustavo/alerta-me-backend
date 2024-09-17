@@ -1,4 +1,4 @@
-import { NotFoundException } from '../../exceptions'
+import { NotFoundException, UnprocessableException } from '../../exceptions'
 import { IAuthorizationService } from '../authorizationService/iAuthorizationService'
 import {
   CreateMedicationReminderParams,
@@ -9,25 +9,52 @@ import {
   IMedicationReminderService,
   MedicationReminder,
   UpdateMedicationReminderParams,
+  DayOfWeekTranslations,
+  DoseRaw,
 } from './iMedicationReminderService'
-import { firestore } from 'firebase-admin'
+import { getFirestore } from 'firebase-admin/firestore'
 import { DateFormat } from '../../utils/dateFormat'
 
 class MedicationReminderService implements IMedicationReminderService {
   constructor(private readonly authorizationService: IAuthorizationService) {}
 
-  cleanDose = (dose: Dose): Dose => {
-    const cleanedDose = {} as Dose
+  // cleanDose = (dose: Dose): Dose => {
+  //   const cleanedDose = {} as Dose
 
-    for (const dayOfWeek in dose) {
-      const key = dayOfWeek as DayOfWeek
-      cleanedDose[key] = dose[key]?.length === 0 ? null : dose[key]
+  //   for (const dayOfWeek in dose) {
+  //     const key = dayOfWeek as DayOfWeek
+  //     cleanedDose[key] = dose[key]?.length === 0 ? null : dose[key]
+  //   }
+
+  //   return cleanedDose
+  // }
+
+  private findDuplicateDosageDays(dose: DoseRaw): string | null {
+    const duplicateDays: Set<DayOfWeek> = new Set()
+
+    for (const d in dose) {
+      const dayOfWeek = d as DayOfWeek
+      const dosages = dose[dayOfWeek]
+      if (dosages) {
+        const timeOccurrences = new Set<string>()
+        for (const dosage of dosages) {
+          if (timeOccurrences.has(dosage.time)) {
+            duplicateDays.add(dayOfWeek)
+            break
+          }
+          timeOccurrences.add(dosage.time)
+        }
+      }
     }
 
-    return cleanedDose
+    return duplicateDays.size > 0
+      ? Array.from(duplicateDays)
+          .map((e) => DayOfWeekTranslations[e])
+          .join(', ')
+      : null
   }
 
-  convertDoseToSave = (dataDose: Dose) => {
+  private convertDoseToSave = (dataDose: DoseRaw) => {
     const dose: Dose = {} as Dose
 
     for (const d in dataDose) {
@@ -36,7 +63,7 @@ class MedicationReminderService implements IMedicationReminderService {
       dose[dayOfWeek] = !dosages
         ? null
         : dosages.map((dosage) => ({
-            time: DateFormat.formatHHMMToNumber(dosage.time.toString()),
+            time: DateFormat.formatHHMMToNumber(dosage.time),
             amount: Number(dosage.amount),
           }))
     }
@@ -49,23 +76,29 @@ class MedicationReminderService implements IMedicationReminderService {
     dosage_pronunciation,
     comments,
     userId,
-    ...data
+    dose,
   }: CreateMedicationReminderParams): Promise<MedicationReminder> => {
     const authorization = await this.authorizationService.checkIsAuthorized({
       userId,
     })
 
-    const colRef = firestore()
+    const colRef = getFirestore()
       .collection('users')
       .doc(authorization.elderly)
       .collection('medication_reminder')
+
+    const duplicateDosage = this.findDuplicateDosageDays(dose)
+    if (duplicateDosage)
+      throw new UnprocessableException(
+        `Horário duplicado em ${duplicateDosage}`
+      )
 
     const dataToSave = {
       name,
       dosage_unit,
       dosage_pronunciation,
       comments: comments ?? null,
-      dose: this.convertDoseToSave(this.cleanDose(data.dose)),
+      dose: this.convertDoseToSave(dose),
     }
 
     const docRef = await colRef.add(dataToSave)
@@ -83,7 +116,7 @@ class MedicationReminderService implements IMedicationReminderService {
       userId,
     })
 
-    const colRef = firestore()
+    const colRef = getFirestore()
       .collection('users')
       .doc(authorization.elderly)
       .collection('medication_reminder')
@@ -116,7 +149,7 @@ class MedicationReminderService implements IMedicationReminderService {
       userId,
     })
 
-    const docRefUser = firestore()
+    const docRefUser = getFirestore()
       .collection('users')
       .doc(authorization.elderly)
       .collection('medication_reminder')
@@ -127,14 +160,21 @@ class MedicationReminderService implements IMedicationReminderService {
 
     if (!docData) throw new NotFoundException('Medicamento não encontrado')
 
+    const dose = data.dose
+    if (dose) {
+      const duplicateDosage = this.findDuplicateDosageDays(dose)
+      if (duplicateDosage)
+        throw new UnprocessableException(
+          `Horários duplicados [${duplicateDosage}]`
+        )
+    }
+
     const dataToUpdate = {
       dosage_pronunciation: data.dosage_pronunciation ?? null,
       dosage_unit: data.dosage_unit ?? null,
       name: data.name ?? null,
       comments: data.comments ?? null,
-      dose: data.dose
-        ? this.convertDoseToSave(this.cleanDose(data.dose))
-        : null,
+      dose: data.dose ? this.convertDoseToSave(data.dose) : null,
     }
 
     for (const key in dataToUpdate) {
@@ -164,7 +204,7 @@ class MedicationReminderService implements IMedicationReminderService {
       userId,
     })
 
-    const docRefUser = firestore()
+    const docRefUser = getFirestore()
       .collection('users')
       .doc(authorization.elderly)
       .collection('medication_reminder')

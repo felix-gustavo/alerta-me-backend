@@ -1,80 +1,44 @@
-import crypto from 'crypto'
-import { NextFunction, Request, Response, Router } from 'express'
+import { Router } from 'express'
 import { handleValidationErrors } from '../../validations/handleValidationErrors'
 import { WaterReminderController } from '../../controllers/waterReminderController'
-import { createWaterReminderValidateScheme } from '../../validations/schemes/createWaterReminderValidate'
-import { updateWaterReminderValidateScheme } from '../../validations/schemes/updateWaterReminderValidate'
-import {
-  decodeAmazonTokenMiddleware,
-  decodeFirebaseTokenMiddleware,
-} from '../../middlewares/decodeTokenMiddleware'
-import { AddNotificationWaterValidateScheme } from '../../validations/schemes/addNotificationWaterValidate'
-import { ForbiddenException } from '../../exceptions'
-import { setHistoryValidateScheme } from '../../validations/schemes/setHistoryValidade'
+import { createWaterValidate } from '../../validations/schemes/createWaterValidate'
+import { updateWaterValidate } from '../../validations/schemes/updateWaterValidate'
+import { decodeFirebaseTokenMiddleware } from '../../middlewares/decodeTokenMiddleware'
+import { WaterHistoryRoute } from './waterHistory'
+import { WaterReminderHistoryController } from '../../controllers/waterReminderHistoryController'
 
 class WaterReminderRoute {
-  constructor(private readonly controller: WaterReminderController) {}
+  constructor(
+    private readonly waterReminderController: WaterReminderController,
+    private readonly waterReminderHistoryController: WaterReminderHistoryController
+  ) {}
 
   routes = (): Router => {
     const waterReminderRoute = Router()
-
-    waterReminderRoute.post(
-      '/recent-history',
-      AddNotificationWaterValidateScheme,
-      handleValidationErrors,
-      (req: Request, _: Response, next: NextFunction) => {
-        const secret = process.env.SECRET ?? ''
-        const dataSecret = process.env.DATA_SECRET ?? ''
-
-        const expectedHash = crypto
-          .createHmac('sha256', secret)
-          .update(dataSecret)
-          .digest('hex')
-
-        console.log(`secret: ${secret} :::::: dataSecret: ${dataSecret}`)
-        console.log(
-          `req.headers.secret: ${req.headers.secret} :::::: expectedHash: ${expectedHash}`
-        )
-        if (req.headers.secret === expectedHash) return next()
-        throw new ForbiddenException()
-      },
-      this.controller.addHistory
+    waterReminderRoute.use(
+      new WaterHistoryRoute(this.waterReminderHistoryController).routes()
     )
 
     waterReminderRoute.post(
       '/',
-      createWaterReminderValidateScheme,
+      createWaterValidate,
       handleValidationErrors,
       decodeFirebaseTokenMiddleware,
-      this.controller.create
-    )
-
-    waterReminderRoute.get(
-      '/recent-history',
-      decodeAmazonTokenMiddleware,
-      this.controller.getRecentHistory
-    )
-
-    waterReminderRoute.put(
-      '/set-amount-history',
-      setHistoryValidateScheme,
-      handleValidationErrors,
-      decodeAmazonTokenMiddleware,
-      this.controller.setAmountHistory
+      this.waterReminderController.create
     )
 
     waterReminderRoute.get(
       '/',
       decodeFirebaseTokenMiddleware,
-      this.controller.get
+      this.waterReminderController.get
     )
 
     waterReminderRoute.put(
       '/',
-      updateWaterReminderValidateScheme,
+      updateWaterValidate,
       handleValidationErrors,
       decodeFirebaseTokenMiddleware,
-      this.controller.update
+      this.waterReminderController.update
     )
 
     return waterReminderRoute

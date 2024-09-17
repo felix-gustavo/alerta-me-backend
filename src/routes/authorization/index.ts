@@ -2,11 +2,11 @@ import { Router } from 'express'
 import { AuthorizationController } from '../../controllers/authorizationController'
 import { handleValidationErrors } from '../../validations/handleValidationErrors'
 import { createAuthorizationValidateScheme } from '../../validations/schemes/createAuthorizationValidate'
-import { updateAuthorizationValidateScheme } from '../../validations/schemes/updateAuthorizationValidate'
 import {
   decodeAmazonTokenMiddleware,
   decodeFirebaseTokenMiddleware,
 } from '../../middlewares/decodeTokenMiddleware'
+import { paramValidateScheme } from '../../validations/schemes/paramValidateScheme'
 
 class AuthorizationRoute {
   constructor(private readonly controller: AuthorizationController) {}
@@ -35,8 +35,8 @@ class AuthorizationRoute {
     )
 
     authorizationRoute.put(
-      '/elderly/approve',
-      updateAuthorizationValidateScheme,
+      '/elderly/approve/:id',
+      paramValidateScheme('id'),
       handleValidationErrors,
       decodeAmazonTokenMiddleware,
       this.controller.approvedAuthorizationElderly

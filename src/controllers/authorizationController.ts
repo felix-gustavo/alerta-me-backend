@@ -31,7 +31,7 @@ class AuthorizationController {
   }
 
   approvedAuthorizationElderly = async (req: CustomRequest, res: Response) => {
-    const { id }: { id: string } = req.body
+    const id = req.params.id as string
     const userId = req.user?.user_id as string
 
     await this.authorizationService.updateStatus({

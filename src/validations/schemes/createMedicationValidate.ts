@@ -1,6 +1,6 @@
 import { body } from 'express-validator'
 
-const createMedicationReminderValidateScheme = [
+const createMedicationValidate = [
   body('name')
     .isLength({ min: 3, max: 100 })
     .withMessage(
@@ -91,4 +91,4 @@ const createMedicationReminderValidateScheme = [
     .withMessage('Campo [amount] precisa sem um número'),
 ]
 
-export { createMedicationReminderValidateScheme }
+export { createMedicationValidate }

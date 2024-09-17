@@ -1,30 +1,38 @@
 import { Response } from 'express'
 import {
-  CreateMedicalReminderParams,
+  CreateMedicalReminderStringParams,
   IMedicalReminderService,
   UpdateMedicalReminderParams,
 } from '../services/medicalReminderService/iMedicalReminderService'
 import { CustomRequest } from '../middlewares/decodeTokenMiddleware'
+import { UnauthorizedException } from '../exceptions'
 
 class MedicalReminderController {
   constructor(private readonly service: IMedicalReminderService) {}
 
   create = async (req: CustomRequest, res: Response) => {
-    const data: Omit<CreateMedicalReminderParams, 'userId'> = req.body
-    const userId = req.user?.user_id as string
+    const data: Omit<CreateMedicalReminderStringParams, 'userId'> = req.body
+    if (!req.user) throw new UnauthorizedException()
 
     const response = await this.service.create({
       ...data,
-      userId,
+      userId: req.user.user_id,
     })
     res.json(response)
   }
 
   get = async (req: CustomRequest, res: Response) => {
-    const withPast = (req.query.withPast as string | undefined) === 'true'
+    const isPast = (req.query.isPast as string | undefined) === 'true'
     const userId = req.user?.user_id as string
 
-    const response = await this.service.get({ userId, withPast: withPast })
+    const response = await this.service.get({ userId, isPast: isPast })
+    res.json(response)
+  }
+
+  getToUpdate = async (req: CustomRequest, res: Response) => {
+    const userId = req.user?.user_id as string
+
+    const response = await this.service.getToUpdate({ userId })
     res.json(response)
   }
 

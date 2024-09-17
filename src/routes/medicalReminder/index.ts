@@ -1,9 +1,10 @@
 import { Router } from 'express'
 import { handleValidationErrors } from '../../validations/handleValidationErrors'
 import { MedicalReminderController } from '../../controllers/medicalReminderController'
-import { createMedicalReminderValidateScheme } from '../../validations/schemes/createMedicalReminderValidate'
-import { updateMedicalReminderValidate } from '../../validations/schemes/updateMedicalReminderValidate'
-import { deleteReminderValidate } from '../../validations/schemes/deleteReminderValidate'
+import { createMedicalValidate } from '../../validations/schemes/createMedicalValidate'
+import { updateMedicalValidate } from '../../validations/schemes/updateMedicalValidate'
+import { paramValidateScheme } from '../../validations/schemes/paramValidateScheme'
+import { getMedicalValidate } from '../../validations/schemes/getMedicalValidate'
 
 class MedicalReminderRoute {
   constructor(private readonly controller: MedicalReminderController) {}
@@ -13,20 +14,26 @@ class MedicalReminderRoute {
 
     medicalReminderRoute.post(
       '/',
-      createMedicalReminderValidateScheme,
+      createMedicalValidate,
       handleValidationErrors,
       this.controller.create
     )
-    medicalReminderRoute.get('/', this.controller.get)
+    medicalReminderRoute.get('/to-update', this.controller.getToUpdate)
+    medicalReminderRoute.get(
+      '/',
+      getMedicalValidate,
+      handleValidationErrors,
+      this.controller.get
+    )
     medicalReminderRoute.put(
       '/:id',
-      updateMedicalReminderValidate,
+      updateMedicalValidate,
       handleValidationErrors,
       this.controller.update
     )
     medicalReminderRoute.delete(
       '/:id',
-      deleteReminderValidate,
+      paramValidateScheme('id'),
       handleValidationErrors,
       this.controller.delete
     )

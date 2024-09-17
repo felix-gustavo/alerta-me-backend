@@ -1,82 +1,97 @@
 import { DateFormat } from '../../utils/dateFormat'
 import {
-  AddNotificationParams,
-  AmountHistoryParams,
-  CreateWaterReminderParams,
+  WaterReminderParams,
+  CreateWaterReminderStringParams,
   IWaterReminderService,
   UpdateWaterReminderParams,
-  WaterHistory,
   WaterReminder,
 } from './iWaterReminderService'
 import { IAuthorizationService } from '../authorizationService/iAuthorizationService'
-import { NotFoundException, UnprocessableException } from '../../exceptions'
-import { firestore } from 'firebase-admin'
+import {
+  NotificationDeniedException,
+  UnprocessableException,
+} from '../../exceptions'
+import { getFirestore } from 'firebase-admin/firestore'
 import { IUsersService } from '../usersService/iUsersService'
-import { AmazonScheduler } from '../amazonScheduler'
+import {
+  WaterScheduler,
+  WaterSchedulerInput,
+} from '../amazonSchedulers/waterScheduler'
+import { AmazonScheduler } from '../amazonSchedulers/scheduler'
+
+type WaterReminderSchedulerInput = {
+  elderly: {
+    id: string
+    ask_user_id: string
+  }
+  waterReminder: Omit<WaterReminder, 'id'>
+}
 
 class WaterReminderService implements IWaterReminderService {
   constructor(
     private readonly authorizationService: IAuthorizationService,
-    private readonly usersService: IUsersService
+    private readonly usersService: IUsersService,
+    private readonly waterScheduler: WaterScheduler
   ) {}
 
-  create = async (data: CreateWaterReminderParams): Promise<WaterReminder> => {
-    const start = DateFormat.formatHHMMToNumber(data.start)
-    const end = DateFormat.formatHHMMToNumber(data.end)
-    const interval = parseInt(data.interval)
-    const amount = parseInt(data.amount)
-    const userId = data.userId
-    const reminders = data.reminders
-    const active = data.active
-
+  create = async ({
+    userId,
+    ...data
+  }: CreateWaterReminderStringParams): Promise<WaterReminder> => {
     const authorization = await this.authorizationService.checkIsAuthorized({
       userId,
     })
 
-    const colRef = firestore()
+    const colRef = getFirestore()
       .collection('users')
       .doc(authorization.elderly)
       .collection('water_reminder')
 
-    const [userElderly, docSnap] = await Promise.all([
+    const [userElderly, querySnapshot] = await Promise.all([
       this.usersService.getElderlyById(authorization.elderly),
       colRef.get(),
     ])
 
-    if (!docSnap.empty || userElderly == null)
-      throw new UnprocessableException()
-
-    const dataToSave: Omit<WaterReminder, 'id'> = {
-      start,
-      end,
-      interval,
-      amount,
-      active,
-      reminders,
+    const dataToSave: WaterReminderParams = {
+      start: DateFormat.formatHHMMToNumber(data.start),
+      end: DateFormat.formatHHMMToNumber(data.end),
+      interval: parseInt(data.interval),
+      amount: parseInt(data.amount),
+      active: !!data.active,
+      reminders: data.reminders,
     }
 
-    const addReq = colRef.add(dataToSave)
+    if (!querySnapshot.empty || userElderly == null)
+      throw new UnprocessableException()
 
     const { ask_user_id, id: elderlyId } = userElderly
 
-    let amazonReq: Promise<void> | null = null
-    if (ask_user_id != null && dataToSave.active) {
-      const amazonScheduler = new AmazonScheduler()
-      amazonReq = amazonScheduler.create({
-        interval,
-        reminders,
+    if (ask_user_id == null && data.active) {
+      throw new NotificationDeniedException()
+    }
+
+    let schedulerReq: Promise<void> | null = null
+
+    if (ask_user_id && data.active) {
+      schedulerReq = this.waterScheduler.runCreate({
+        interval: dataToSave.interval,
+        reminders: dataToSave.reminders,
         input: {
-          carerName: data.userName,
           elderly: {
             id: elderlyId,
             ask_user_id,
           },
-          suggested_amount: Math.trunc(amount / reminders.length),
+          suggested_amount: Math.trunc(
+            dataToSave.amount / dataToSave.reminders.length
+          ),
         },
       })
     }
 
-    const [docRef, _] = await Promise.all([addReq, amazonReq])
+    const [docRef, _] = await Promise.all([
+      colRef.add(dataToSave),
+      schedulerReq,
+    ])
     return { ...dataToSave, id: docRef.id }
   }
 
@@ -89,167 +104,138 @@ class WaterReminderService implements IWaterReminderService {
       userId,
     })
 
-    const docRefUser = firestore()
+    const colRef = getFirestore()
       .collection('users')
       .doc(authorization.elderly)
       .collection('water_reminder')
 
-    const docSnap = (await docRefUser.get()).docs[0]
+    const docSnap = (await colRef.get()).docs[0]
     if (!docSnap?.exists) return null
 
     return docSnap.data() as WaterReminder
   }
 
   update = async (data: UpdateWaterReminderParams): Promise<WaterReminder> => {
-    const start = data.start ? DateFormat.formatHHMMToNumber(data.start) : null
-    const end = data.end ? DateFormat.formatHHMMToNumber(data.end) : null
-    const interval = data.interval ? parseInt(data.interval) : null
-    const amount = data.amount ? parseInt(data.amount) : null
-    const active = data.active ?? null
-    const reminders = data.reminders
-    const userId = data.userId
-
     const authorization = await this.authorizationService.checkIsAuthorized({
-      userId,
+      userId: data.userId,
     })
 
-    const docRef = firestore()
+    const colRef = getFirestore()
       .collection('users')
       .doc(authorization.elderly)
       .collection('water_reminder')
 
     const [userElderly, querySnapshot] = await Promise.all([
       this.usersService.getElderlyById(authorization.elderly),
-      docRef.get(),
+      colRef.get(),
     ])
 
     const docSnap = querySnapshot.docs[0]
-    if (!docSnap.exists || userElderly == null)
+    if (!docSnap.exists || userElderly == null) {
       throw new UnprocessableException()
+    }
 
     const docData = docSnap.data() as WaterReminder
 
-    const dataToUpdate: Omit<WaterReminder, 'id'> = {
-      start: start ?? docData.start,
-      end: end ?? docData.end,
-      amount: amount ?? docData.amount,
-      interval: interval ?? docData.interval,
-      active: active ?? docData.active,
-      reminders: reminders ?? docData.reminders,
+    const dataToUpdate: WaterReminderParams = {
+      start: data.start
+        ? DateFormat.formatHHMMToNumber(data.start)
+        : docData.start,
+      end: data.end ? DateFormat.formatHHMMToNumber(data.end) : docData.end,
+      amount: data.amount ? parseInt(data.amount) : docData.amount,
+      interval: data.interval ? parseInt(data.interval) : docData.interval,
+      active: data.active != undefined ? !!data.active : docData.active,
+      reminders: data.reminders ?? docData.reminders,
     }
 
-    for (const key in dataToUpdate) {
-      if (dataToUpdate[key as keyof typeof dataToUpdate] === null) {
-        delete dataToUpdate[key as keyof typeof dataToUpdate]
-      }
-    }
-
-    const updateReq = docSnap.ref.update(dataToUpdate)
     const { ask_user_id, id: elderlyId } = userElderly
-    let amazonReq: Promise<void> | null = null
+    if (ask_user_id == null && data.active) {
+      throw new NotificationDeniedException()
+    }
 
-    if (ask_user_id != null) {
-      const amazonScheduler = new AmazonScheduler()
-      amazonReq = dataToUpdate.active
-        ? amazonScheduler.createOrUpdate({
-            interval: dataToUpdate.interval,
-            reminders: dataToUpdate.reminders,
-            input: {
-              carerName: data.userName,
+    let schedulerReq: Promise<void> | null = null
+    if (ask_user_id) {
+      schedulerReq = dataToUpdate.active
+        ? this.waterScheduler.createOrUpdate({
+            scheduleName: elderlyId,
+            data: this._waterSchedulerFormatInput({
               elderly: {
                 id: elderlyId,
                 ask_user_id,
               },
-              suggested_amount: Math.trunc(
-                dataToUpdate.amount / (reminders?.length ?? 1)
-              ),
-            },
+              waterReminder: dataToUpdate,
+            }),
           })
-        : amazonScheduler.delete({ elderlyId })
+        : this.waterScheduler.delete(elderlyId)
     }
 
-    await Promise.all([updateReq, amazonReq])
+    await Promise.all([docSnap.ref.update(dataToUpdate), schedulerReq])
     return { ...dataToUpdate, id: docData.id }
   }
 
-  addHistory = async ({
-    elderlyId,
-    suggested_amount,
-  }: AddNotificationParams): Promise<WaterHistory> => {
-    const authorization = await this.authorizationService.getByElderly({
-      elderlyId,
-    })
-
-    if (!authorization)
-      throw new NotFoundException('Autorização não encontrada')
-
-    const docRefUser = firestore()
-      .collection('users')
-      .doc(authorization.elderly)
-      .collection('water_history')
-
-    const datetime = new Date()
-    datetime.setSeconds(0)
-
-    const dataToSave: Omit<WaterHistory, 'id'> = {
-      amount: null,
-      suggested_amount,
-      datetime,
-    }
-
-    await docRefUser.add(dataToSave)
+  private _waterSchedulerFormatInput(
+    data: WaterReminderSchedulerInput
+  ): WaterSchedulerInput {
     return {
-      ...dataToSave,
-      id: docRefUser.id,
+      interval: data.waterReminder.interval,
+      reminders: data.waterReminder.reminders,
+      input: {
+        elderly: {
+          id: data.elderly.id,
+          ask_user_id: data.elderly.ask_user_id,
+        },
+        suggested_amount: Math.trunc(
+          data.waterReminder.amount /
+            (data.waterReminder.reminders?.length ?? 1) // POSSIVEL PROBLEMA: NÃO ERA data.waterReminder.reminders, MAS SOMENTE reminders
+        ),
+      },
     }
   }
 
-  getRecentHistory = async ({
-    elderlyId,
-  }: {
-    elderlyId: string
-  }): Promise<WaterHistory | null> => {
-    const authorization = await this.authorizationService.getByElderly({
-      elderlyId,
-    })
+  async enableNotifications(elderlyId: string): Promise<void> {
+    const waterReminder = await this.get({ userId: elderlyId })
 
-    if (!authorization)
-      throw new NotFoundException('Autorização não encontrada')
+    if (waterReminder) {
+      const elderly = await this.usersService.getElderlyById(elderlyId)
+      if (elderly == null) throw new UnprocessableException()
+      const { ask_user_id } = elderly
 
-    const docRefUser = firestore()
-      .collection('users')
-      .doc(authorization.elderly)
-      .collection('water_history')
-      .orderBy('datetime', 'desc')
-      .limit(1)
-
-    const querySnapshot = await docRefUser.get()
-    if (querySnapshot.empty) return null
-
-    const doc = querySnapshot.docs[0]
-    const waterHistory = doc.data() as WaterHistory
-
-    return { ...waterHistory, id: doc.id }
+      if (ask_user_id) {
+        this.waterScheduler.createOrUpdate({
+          scheduleName: elderly.id,
+          data: this._waterSchedulerFormatInput({
+            elderly: {
+              id: elderlyId,
+              ask_user_id,
+            },
+            waterReminder: waterReminder,
+          }),
+        })
+      }
+    }
   }
 
-  async setAmountHistory({
-    id,
-    amount,
-    elderlyId,
-  }: AmountHistoryParams): Promise<void> {
-    const authorization = await this.authorizationService.getByElderly({
-      elderlyId,
-    })
-
-    if (!authorization)
-      throw new NotFoundException('Autorização não encontrada')
-
-    await firestore()
+  async disableNotifications(elderlyId: string): Promise<void> {
+    const querySnapshot = await getFirestore()
       .collection('users')
-      .doc(authorization.elderly)
-      .collection('water_history')
-      .doc(id)
-      .update({ amount })
+      .doc(elderlyId)
+      .collection('water_reminder')
+      .get()
+
+    const docSnap = querySnapshot.docs[0]
+
+    if (docSnap.exists) {
+      const waterReminder = docSnap.data() as WaterReminder
+      if (waterReminder.active) {
+        await Promise.all([
+          this.waterScheduler.delete(elderlyId),
+          docSnap.ref.update({
+            ...waterReminder,
+            active: false,
+          }),
+        ])
+      }
+    }
   }
 }
 

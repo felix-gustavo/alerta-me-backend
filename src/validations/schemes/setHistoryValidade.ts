@@ -1,7 +1,8 @@
 import { body } from 'express-validator'
+import { paramValidateScheme } from './paramValidateScheme'
 
 const setHistoryValidateScheme = [
-  body('id').notEmpty().withMessage('Campo id é obrigatório'),
+  ...paramValidateScheme('id'),
   body('amount')
     .notEmpty()
     .withMessage('Campo amount é obrigatório')

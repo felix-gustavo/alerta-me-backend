@@ -8,13 +8,27 @@ enum DayOfWeek {
   Sat = 'sat',
 }
 
-type Dose = {
-  [key in DayOfWeek]: Dosage[] | null
+const DayOfWeekTranslations: { [key in DayOfWeek]: string } = {
+  [DayOfWeek.Sun]: 'Domingo',
+  [DayOfWeek.Mon]: 'Segunda',
+  [DayOfWeek.Tue]: 'Terça',
+  [DayOfWeek.Wed]: 'Quarta',
+  [DayOfWeek.Thu]: 'Quinta',
+  [DayOfWeek.Fri]: 'Sexta',
+  [DayOfWeek.Sat]: 'Sábado',
 }
 
-type Dosage = {
-  time: number
-  amount: number
+type DoseRaw = {
+  [key in DayOfWeek]: Dosage<string>[] | null
+}
+
+type Dose = {
+  [key in DayOfWeek]: Dosage<number>[] | null
+}
+
+type Dosage<T> = {
+  time: T
+  amount: T
 }
 
 type MedicationReminder = {
@@ -23,7 +37,7 @@ type MedicationReminder = {
   dosage_unit: string
   dosage_pronunciation: string
   comments?: string
-  dose: Dose
+  dose: DoseRaw
 }
 
 type CreateMedicationReminderParams = {
@@ -59,6 +73,8 @@ export {
   DeleteMedicationReminderParams,
   MedicationReminder,
   DayOfWeek,
+  DayOfWeekTranslations,
   Dose,
+  DoseRaw,
   Dosage,
 }

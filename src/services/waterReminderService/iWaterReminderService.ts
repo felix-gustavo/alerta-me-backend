@@ -1,18 +1,4 @@
-type CreateWaterReminderParams = {
-  userName: string
-  userId: string
-  start: string
-  end: string
-  interval: string
-  amount: string
-  active: boolean
-  reminders: string[]
-}
-
-type AddNotificationParams = {
-  elderlyId: string
-  suggested_amount: number
-}
+import { INotifications } from '../iNotifications'
 
 type WaterReminder = {
   id: string
@@ -24,40 +10,34 @@ type WaterReminder = {
   reminders: string[]
 }
 
-type WaterHistory = {
-  id: string
-  datetime: Date
-  suggested_amount: number
-  amount: number | null
+type WaterReminderParams = Omit<WaterReminder, 'id'>
+
+type CreateWaterReminderStringParams = {
+  userId: string
+} & { [K in keyof Omit<WaterReminder, 'reminders'>]: string } & Pick<
+    WaterReminder,
+    'reminders'
+  >
+
+type UpdateWaterReminderParams = Partial<
+  { [K in keyof Omit<WaterReminder, 'reminders'>]: string } & Pick<
+    WaterReminder,
+    'reminders'
+  >
+> & {
+  userId: string
 }
 
-type AmountHistoryParams = {
-  id: string
-  amount: number | null
-  elderlyId: string
-}
-
-type UpdateWaterReminderParams = Pick<
-  CreateWaterReminderParams,
-  'userId' | 'userName'
-> &
-  Partial<Omit<CreateWaterReminderParams, 'userId'> & { active: boolean }>
-
-type IWaterReminderService = {
-  create(data: CreateWaterReminderParams): Promise<WaterReminder>
+interface IWaterReminderService extends INotifications {
+  create(data: CreateWaterReminderStringParams): Promise<WaterReminder>
   get(data: { userId: string }): Promise<WaterReminder | null>
   update(data: UpdateWaterReminderParams): Promise<WaterReminder>
-  addHistory(data: AddNotificationParams): Promise<WaterHistory>
-  getRecentHistory(data: { elderlyId: string }): Promise<WaterHistory | null>
-  setAmountHistory(data: AmountHistoryParams): Promise<void>
 }
 
 export {
   IWaterReminderService,
-  CreateWaterReminderParams,
+  WaterReminderParams,
+  CreateWaterReminderStringParams,
   WaterReminder,
-  AddNotificationParams,
-  WaterHistory,
   UpdateWaterReminderParams,
-  AmountHistoryParams,
 }

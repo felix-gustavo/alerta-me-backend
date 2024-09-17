@@ -1,21 +1,31 @@
+import { INotifications } from '../iNotifications'
+
 type MedicalReminder = {
   id: string
   medic_name: string
   specialty: string
-  date: string
+  datetime: Date
   address: string
+  active: boolean
+  attended: boolean | null
 }
 
-type CreateMedicalReminderParams = {
+type MedicalReminderParams = Omit<MedicalReminder, 'id'>
+
+type CreateMedicalReminderStringParams = {
   userId: string
-} & Omit<MedicalReminder, 'id'>
+} & {
+  [K in keyof MedicalReminderParams]: string
+}
 
 type GetMedicalReminderParams = {
   userId: string
-  withPast: boolean
+  isPast: boolean
 }
 
-type UpdateMedicalReminderParams = Partial<MedicalReminder> & {
+type UpdateMedicalReminderParams = Partial<{
+  [K in keyof MedicalReminderParams]: string
+}> & {
   userId: string
   id: string
 }
@@ -25,16 +35,19 @@ type DeleteMedicalReminderParams = {
   id: string
 }
 
-interface IMedicalReminderService {
-  create(data: CreateMedicalReminderParams): Promise<MedicalReminder>
-  get(data: GetMedicalReminderParams): Promise<MedicalReminder[] | null>
+interface IMedicalReminderService extends INotifications {
+  create(data: CreateMedicalReminderStringParams): Promise<MedicalReminder>
+  get(data: GetMedicalReminderParams): Promise<MedicalReminder[]>
+  getToUpdate(data: { userId: string }): Promise<MedicalReminder[]>
+  // getAllActives(data: { userId: string }): Promise<MedicalReminder[]>
   update(data: UpdateMedicalReminderParams): Promise<MedicalReminder>
   delete(data: DeleteMedicalReminderParams): Promise<void>
 }
 
 export {
   IMedicalReminderService,
-  CreateMedicalReminderParams,
+  MedicalReminderParams,
+  CreateMedicalReminderStringParams,
   GetMedicalReminderParams,
   UpdateMedicalReminderParams,
   DeleteMedicalReminderParams,

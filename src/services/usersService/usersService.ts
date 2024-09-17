@@ -1,9 +1,5 @@
-import { firestore } from 'firebase-admin'
-import {
-  NotFoundException,
-  UnauthorizedException,
-  UnprocessableException,
-} from '../../exceptions'
+import { getFirestore } from 'firebase-admin/firestore'
+import { NotFoundException, UnauthorizedException } from '../../exceptions'
 import {
   CreateUsers,
   DeleteElderlyParams,
@@ -26,7 +22,7 @@ class UsersService implements IUsersService {
   }
 
   async createElderly(data: CreateUsers): Promise<UserElderly> {
-    const usersCollection = firestore().collection('users')
+    const usersCollection = getFirestore().collection('users')
     const id = data.id
     delete data.id
 
@@ -52,7 +48,7 @@ class UsersService implements IUsersService {
   }
 
   async getByEmail({ email }: { email: string }): Promise<UserElderly | null> {
-    const snapshot = await firestore()
+    const snapshot = await getFirestore()
       .collection('users')
       .where('email', '==', email)
       .get()
@@ -69,7 +65,7 @@ class UsersService implements IUsersService {
   }
 
   async getElderlyById(id: string): Promise<UserElderly | null> {
-    const docRef = firestore().collection('users').doc(id)
+    const docRef = getFirestore().collection('users').doc(id)
     const docSnap = await docRef.get()
 
     if (docSnap.exists) {
@@ -94,15 +90,7 @@ class UsersService implements IUsersService {
   }
 
   async update(data: UpdateParams): Promise<string> {
-    const authorizationService = new AuthorizationService(this)
-    const authorization = await authorizationService.getByElderly({
-      elderlyId: data.id,
-    })
-
-    if (!authorization || authorization.status !== 'aprovado')
-      throw new UnprocessableException('Não autorizado')
-
-    const docSnap = await firestore().collection('users').doc(data.id).get()
+    const docSnap = await getFirestore().collection('users').doc(data.id).get()
     const docData = docSnap.data()
 
     if (!docData) throw new NotFoundException('Usuário não encontrado')
@@ -120,37 +108,7 @@ class UsersService implements IUsersService {
     }
 
     await docSnap.ref.update(dataToUpdate)
-
     return data.id
-  }
-
-  async proactiveSubAccepted(data: {
-    elderlyId: string
-    ask_user_id: string
-  }): Promise<string> {
-    const docSnap = await firestore()
-      .collection('users')
-      .doc(data.elderlyId)
-      .get()
-    const docData = docSnap.data()
-
-    if (!docData) throw new NotFoundException('Usuário não encontrado')
-
-    await docSnap.ref.update({ ask_user_id: data.ask_user_id })
-    return data.elderlyId
-  }
-
-  async proactiveSubDisabled(data: { elderlyId: string }): Promise<string> {
-    const docSnap = await firestore()
-      .collection('users')
-      .doc(data.elderlyId)
-      .get()
-    const docData = docSnap.data()
-
-    if (!docData) throw new NotFoundException('Usuário não encontrado')
-
-    await docSnap.ref.update({ ask_user_id: null })
-    return data.elderlyId
   }
 
   async delete({ userId }: { userId: string }): Promise<string> {
@@ -178,8 +136,9 @@ class UsersService implements IUsersService {
     }
     await authorizationService.delete({ userId })
 
-    const docRef = firestore().collection('users').doc(elderlyId)
-    await firestore().recursiveDelete(docRef)
+    const docRef = getFirestore().collection('users').doc(elderlyId)
+    await getFirestore().recursiveDelete(docRef)
+
     return elderlyId
   }
 }

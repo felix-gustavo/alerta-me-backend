@@ -1,137 +1,247 @@
 import { IAuthorizationService } from '../authorizationService/iAuthorizationService'
 import {
-  CreateMedicalReminderParams,
+  MedicalReminderParams,
+  CreateMedicalReminderStringParams,
   DeleteMedicalReminderParams,
   GetMedicalReminderParams,
   IMedicalReminderService,
   MedicalReminder,
   UpdateMedicalReminderParams,
 } from './iMedicalReminderService'
-import { NotFoundException } from '../../exceptions'
-import { firestore } from 'firebase-admin'
+import {
+  NotFoundException,
+  NotificationDeniedException,
+  UnprocessableException,
+  ValidationException,
+} from '../../exceptions'
+import { getFirestore, Timestamp } from 'firebase-admin/firestore'
+import { IUsersService } from '../usersService/iUsersService'
+import { MedicalScheduler } from '../amazonSchedulers/medicalScheduler'
+import { isBefore } from 'date-fns'
 
 class MedicalReminderService implements IMedicalReminderService {
-  constructor(private readonly authorizationService: IAuthorizationService) {}
+  constructor(
+    private readonly authorizationService: IAuthorizationService,
+    private readonly usersService: IUsersService,
+    private readonly medicalScheduler: MedicalScheduler
+  ) {}
 
-  create = async ({
-    address,
-    medic_name,
-    specialty,
-    userId,
-    ...data
-  }: CreateMedicalReminderParams): Promise<MedicalReminder> => {
-    const date = new Date(data.date)
+  create = async (
+    data: CreateMedicalReminderStringParams
+  ): Promise<MedicalReminder> => {
     const authorization = await this.authorizationService.checkIsAuthorized({
-      userId,
+      userId: data.userId,
     })
 
-    const docRefUser = firestore()
+    const datetime = new Date(data.datetime)
+
+    if (isBefore(datetime, new Date())) {
+      throw new ValidationException(
+        'Campo datetime inválido, insira um horário futuro'
+      )
+    }
+
+    const colRef = getFirestore()
       .collection('users')
       .doc(authorization.elderly)
       .collection('medical_reminder')
 
-    const dataToSave = {
-      address,
-      medic_name,
-      specialty,
-      datetime: date,
+    const dataToSave: MedicalReminderParams = {
+      address: data.address,
+      medic_name: data.medic_name,
+      specialty: data.specialty,
+      datetime,
+      active: !!data.active,
+      attended: null,
     }
 
-    const docRef = await docRefUser.add(dataToSave)
-    const { id: medicalReminderId } = docRef
+    const docRef = await colRef.add(dataToSave)
 
-    return {
-      id: medicalReminderId,
-      address: dataToSave.address,
-      medic_name: dataToSave.medic_name,
-      specialty: dataToSave.specialty,
-      date: date.toISOString(),
-    } as MedicalReminder
+    const userElderly = await this.usersService.getElderlyById(
+      authorization.elderly
+    )
+    if (userElderly == null) throw new UnprocessableException()
+
+    const { ask_user_id } = userElderly
+
+    if (ask_user_id == null && data.active) {
+      throw new NotificationDeniedException()
+    }
+
+    const medicalReminder = { ...dataToSave, id: docRef.id }
+
+    if (ask_user_id && data.active) {
+      await this.medicalScheduler.runCreate({
+        ask_user_id,
+        input: medicalReminder,
+      })
+    }
+
+    return medicalReminder
   }
 
   get = async ({
     userId,
-    withPast,
-  }: GetMedicalReminderParams): Promise<MedicalReminder[] | null> => {
+    isPast,
+  }: GetMedicalReminderParams): Promise<MedicalReminder[]> => {
     const authorization = await this.authorizationService.checkIsAuthorized({
       userId,
     })
 
-    const docRefUser = firestore()
+    const colRef = getFirestore()
       .collection('users')
       .doc(authorization.elderly)
       .collection('medical_reminder')
 
-    const queryRefWithPast = docRefUser.orderBy('datetime', 'desc')
-    const queryRef = docRefUser
+    const querySnapshot = await colRef
       .orderBy('datetime', 'desc')
-      .where('datetime', '>=', firestore.Timestamp.now())
+      .where('datetime', isPast ? '<' : '>=', Timestamp.now())
+      .get()
 
-    const querySnapshot = await (withPast ? queryRefWithPast : queryRef).get()
-    if (querySnapshot.empty) return null
+    if (querySnapshot.empty) return []
 
     const response: MedicalReminder[] = querySnapshot.docs.map((docData) => {
       const data = docData.data()
 
       return {
+        ...data,
         id: docData.id,
-        address: data['address'],
-        medic_name: data['medic_name'],
-        specialty: data['specialty'],
-        date: (data['datetime'] as firestore.Timestamp).toDate().toISOString(),
+        datetime: (data.datetime as Timestamp).toDate(),
       } as MedicalReminder
     })
 
     return response
   }
 
-  update = async ({
+  getToUpdate = async ({
     userId,
-    ...data
-  }: UpdateMedicalReminderParams): Promise<MedicalReminder> => {
-    const datetime = data.date ? new Date(data.date) : null
-    const medic_name = data.medic_name ?? null
-    const specialty = data.specialty ?? null
-    const address = data.address ?? null
-
+  }: {
+    userId: string
+  }): Promise<MedicalReminder[]> => {
     const authorization = await this.authorizationService.checkIsAuthorized({
       userId,
     })
 
-    const docRefUser = firestore()
+    const now = new Date()
+    const yesterday = new Date(now)
+    yesterday.setDate(now.getDate() - 1)
+
+    const startTimestamp = Timestamp.fromDate(yesterday)
+    const endTimestamp = Timestamp.fromDate(now)
+
+    const colRef = getFirestore()
       .collection('users')
       .doc(authorization.elderly)
       .collection('medical_reminder')
 
-    const docSnap = await docRefUser.doc(data.id).get()
-    const docData = docSnap.data()
+    const querySnapshot = await colRef
+      .where('attended', '==', null)
+      .where('datetime', '>=', startTimestamp)
+      .where('datetime', '<=', endTimestamp)
+      .orderBy('datetime', 'desc')
+      .get()
 
-    if (!docData) throw new NotFoundException('Consulta não encontrada')
+    if (querySnapshot.empty) return []
 
-    const dataToUpdate = {
-      medic_name,
-      specialty,
-      datetime,
-      address,
-    }
+    const response: MedicalReminder[] = querySnapshot.docs.map((docData) => {
+      const data = docData.data()
 
-    for (const key in dataToUpdate) {
-      if (dataToUpdate[key as keyof typeof dataToUpdate] === null) {
-        delete dataToUpdate[key as keyof typeof dataToUpdate]
+      return {
+        ...data,
+        id: docData.id,
+        datetime: (data.datetime as Timestamp).toDate(),
+      } as MedicalReminder
+    })
+
+    return response
+  }
+
+  // async getAllActives({
+  //   userId,
+  // }: {
+  //   userId: string
+  // }): Promise<MedicalReminder[]> {
+  //   const authorization = await this.authorizationService.checkIsAuthorized({
+  //     userId,
+  //   })
+
+  //   const querySnapshot = await getFirestore()
+  //     .collection('users')
+  //     .doc(authorization.elderly)
+  //     .collection('medical_reminder')
+  //     .get()
+
+  //   if (querySnapshot.empty) return []
+
+  //   return querySnapshot.docs.map((e) => {
+  //     const medicalReminder = e.data() as MedicalReminder
+  //     return { ...medicalReminder, id: e.id }
+  //   })
+  // }
+
+  update = async ({
+    userId,
+    ...data
+  }: UpdateMedicalReminderParams): Promise<MedicalReminder> => {
+    const authorization = await this.authorizationService.checkIsAuthorized({
+      userId,
+    })
+
+    if (data.datetime) {
+      const datetime = new Date(data.datetime)
+
+      if (isBefore(datetime, new Date())) {
+        throw new ValidationException(
+          'Campo datetime inválido, insira um horário futuro'
+        )
       }
     }
 
-    await docSnap.ref.update(dataToUpdate)
+    const colRef = getFirestore()
+      .collection('users')
+      .doc(authorization.elderly)
+      .collection('medical_reminder')
 
-    return {
-      id: data.id,
-      medic_name: dataToUpdate.medic_name ?? docData['medic_name'],
-      specialty: dataToUpdate.specialty ?? docData['specialty'],
-      address: dataToUpdate.address ?? docData['address'],
-      date:
-        dataToUpdate.datetime ??
-        (docData?.['datetime'] as firestore.Timestamp).toDate().toISOString(),
-    } as MedicalReminder
+    const [userElderly, docSnap] = await Promise.all([
+      this.usersService.getElderlyById(authorization.elderly),
+      colRef.doc(data.id).get(),
+    ])
+    const docData = docSnap.data() as MedicalReminder
+
+    if (docData == null || userElderly == null)
+      throw new UnprocessableException()
+
+    const dataToUpdate: MedicalReminderParams = {
+      medic_name: data.medic_name ?? docData.medic_name,
+      specialty: data.specialty ?? docData.specialty,
+      datetime: data.datetime ? new Date(data.datetime) : docData.datetime,
+      address: data.address ?? docData.address,
+      active: data.active != undefined ? !!data.active : docData.active,
+      attended: data.attended != undefined ? !!data.attended : docData.attended,
+    }
+
+    const medicalReminder: MedicalReminder = { ...dataToUpdate, id: data.id }
+
+    const { ask_user_id } = userElderly
+    if (ask_user_id == null && data.active) {
+      throw new NotificationDeniedException()
+    }
+
+    let schedulerReq: Promise<void> | null = null
+    if (ask_user_id) {
+      schedulerReq = dataToUpdate.active
+        ? this.medicalScheduler.createOrUpdate({
+            scheduleName: data.id,
+            data: {
+              ask_user_id,
+              input: medicalReminder,
+            },
+          })
+        : this.medicalScheduler.delete(data.id)
+    }
+
+    await Promise.all([docSnap.ref.update(dataToUpdate), schedulerReq])
+    return medicalReminder
   }
 
   delete = async ({
@@ -142,7 +252,7 @@ class MedicalReminderService implements IMedicalReminderService {
       userId,
     })
 
-    const docRefUser = firestore()
+    const docRefUser = getFirestore()
       .collection('users')
       .doc(authorization.elderly)
       .collection('medical_reminder')
@@ -152,8 +262,45 @@ class MedicalReminderService implements IMedicalReminderService {
     const docData = docSnap.data()
 
     if (!docData) throw new NotFoundException('Consulta não encontrada')
-    await docSnap.ref.delete()
+
+    await Promise.all([
+      docSnap.ref.delete(),
+      this.medicalScheduler.delete(docSnap.ref.id),
+    ])
+
     return
+  }
+
+  async enableNotifications(_: string): Promise<void> {
+    return
+    // const reminders = await this.getAllActives({ userId: elderlyId })
+
+    // await Promise.all(
+    //   reminders.map((e) => {
+    //     this.medicalScheduler.createOrUpdate({
+    //       scheduleName: e.id,
+    //       data: { elderlyId, input: e },
+    //     })
+    //   })
+    // )
+  }
+
+  async disableNotifications(elderlyId: string): Promise<void> {
+    const querySnapshot = await getFirestore()
+      .collection('users')
+      .doc(elderlyId)
+      .collection('medical_reminder')
+      .where('active', '==', true)
+      .get()
+
+    if (!querySnapshot.empty) {
+      querySnapshot.forEach(async (docData) => {
+        await Promise.all([
+          this.medicalScheduler.delete(docData.id),
+          docData.ref.update({ active: false }),
+        ])
+      })
+    }
   }
 }
 

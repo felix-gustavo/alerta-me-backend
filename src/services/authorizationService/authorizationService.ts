@@ -11,7 +11,7 @@ import {
   IAuthorizationService,
   UpdateAuthorizationParams,
 } from './iAuthorizationService'
-import { firestore } from 'firebase-admin'
+import { getFirestore, Timestamp } from 'firebase-admin/firestore'
 
 class AuthorizationService implements IAuthorizationService {
   constructor(private readonly usersService: IUsersService) {}
@@ -36,7 +36,7 @@ class AuthorizationService implements IAuthorizationService {
       datetime: new Date(),
     }
 
-    const docRef = await firestore().collection('authorizations').add(data)
+    const docRef = await getFirestore().collection('authorizations').add(data)
     return {
       id: docRef.id,
       datetime: data.datetime.toISOString(),
@@ -51,7 +51,7 @@ class AuthorizationService implements IAuthorizationService {
   }: {
     elderlyId: string
   }): Promise<Authorization | null> {
-    const query = firestore()
+    const query = getFirestore()
       .collection('authorizations')
       .orderBy('datetime', 'desc')
       .where('elderly', '==', elderlyId)
@@ -67,7 +67,7 @@ class AuthorizationService implements IAuthorizationService {
       elderly: data.elderly,
       status: data.status,
       user: data.user,
-      datetime: (data.datetime as firestore.Timestamp).toDate().toISOString(),
+      datetime: (data.datetime as Timestamp).toDate().toISOString(),
     } as Authorization
   }
 
@@ -76,7 +76,7 @@ class AuthorizationService implements IAuthorizationService {
   }: {
     userId: string
   }): Promise<Authorization | null> {
-    const query = firestore()
+    const query = getFirestore()
       .collection('authorizations')
       .where('user', '==', userId)
 
@@ -91,7 +91,7 @@ class AuthorizationService implements IAuthorizationService {
       elderly: data.elderly,
       status: data.status,
       user: data.user,
-      datetime: (data.datetime as firestore.Timestamp).toDate().toISOString(),
+      datetime: (data.datetime as Timestamp).toDate().toISOString(),
     } as Authorization
   }
 
@@ -100,7 +100,7 @@ class AuthorizationService implements IAuthorizationService {
     status,
     elderlyId,
   }: UpdateAuthorizationParams): Promise<void> {
-    const docRef = firestore().collection('authorizations').doc(id)
+    const docRef = getFirestore().collection('authorizations').doc(id)
     const docSnap = await docRef.get()
     if (!docSnap.exists) throw new NotFoundException('Documento não encontrado')
 
@@ -115,7 +115,7 @@ class AuthorizationService implements IAuthorizationService {
   }
 
   async delete({ userId }: { userId: string }): Promise<string> {
-    const query = firestore()
+    const query = getFirestore()
       .collection('authorizations')
       .where('user', '==', userId)
 

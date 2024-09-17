@@ -1,5 +1,11 @@
 import { CustomError } from './customError'
 
+class ValidationException extends CustomError {
+  constructor(message: string) {
+    super(message, 400)
+  }
+}
+
 class UnauthorizedException extends CustomError {
   constructor(message?: string) {
     super(message ?? 'Não autorizado', 401)
@@ -42,6 +48,16 @@ class UnprocessableException extends CustomError {
   }
 }
 
+class NotificationDeniedException extends CustomError {
+  constructor(message?: string) {
+    super(
+      message ??
+        'Pessoa idosa não forneceu permissão para receber notificações. Sugiro que acesse o aplicativo Alexa para alterara permissão antes de criar o lembrete',
+      422
+    )
+  }
+}
+
 class ServerError extends CustomError {
   constructor(message?: string) {
     super(message ?? 'Erro interno do servidor', 500)
@@ -49,6 +65,7 @@ class ServerError extends CustomError {
 }
 
 export {
+  ValidationException,
   UnauthorizedException,
   WithoutTokenException,
   ForbiddenException,
@@ -56,5 +73,6 @@ export {
   SessionExpiredException,
   UserCreationException,
   UnprocessableException,
+  NotificationDeniedException,
   ServerError,
 }
