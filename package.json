@@ -3,12 +3,13 @@
   "version": "1.0.0",
   "description": "",
   "type": "module",
+  "main": "index.ts",
   "engines": {
     "node": "20.x"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "tsx src/server.ts",
+    "dev": "tsx src/index.ts",
     "lint": "eslint ."
   },
   "author": "",
