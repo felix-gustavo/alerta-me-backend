@@ -3,4 +3,4 @@ interface INotifications {
   disableNotifications(elderlyId: string): Promise<void>
 }
 
-export { INotifications }
+export type { INotifications }

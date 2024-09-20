@@ -6,4 +6,4 @@ interface IProactiveService {
   proactiveSubDisabled(data: { elderlyId: string }): Promise<string>
 }
 
-export { IProactiveService }
+export type { IProactiveService }

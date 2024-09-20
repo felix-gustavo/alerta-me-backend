@@ -45,7 +45,7 @@ interface IUsersService {
   deleteElderly(data: DeleteElderlyParams): Promise<string>
 }
 
-export {
+export type {
   IUsersService,
   UserProfile,
   UserElderly,

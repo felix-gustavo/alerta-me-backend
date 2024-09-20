@@ -16,7 +16,7 @@ interface CustomRequest extends Request {
 const decodeAmazonTokenMiddleware = async (
   req: CustomRequest,
   _: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const authorizationHeader = req.headers.authorization
@@ -43,7 +43,7 @@ const decodeAmazonTokenMiddleware = async (
 const decodeFirebaseTokenMiddleware = async (
   req: CustomRequest,
   _: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const authorizationHeader = req.headers.authorization
@@ -72,8 +72,5 @@ const decodeFirebaseTokenMiddleware = async (
   }
 }
 
-export {
-  CustomRequest,
-  decodeFirebaseTokenMiddleware,
-  decodeAmazonTokenMiddleware,
-}
+export { decodeFirebaseTokenMiddleware, decodeAmazonTokenMiddleware }
+export type { CustomRequest }

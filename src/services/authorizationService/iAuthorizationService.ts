@@ -1,11 +1,11 @@
-interface CreateAuthorizationParams {
+type CreateAuthorizationParams = {
   elderlyEmail: string
   userId: string
 }
 
 type AuthorizationStatus = 'aprovado' | 'aguardando'
 
-interface Authorization {
+type Authorization = {
   id: string
   elderly: string
   status: AuthorizationStatus
@@ -28,7 +28,7 @@ interface IAuthorizationService {
   checkIsAuthorized(data: { userId: string }): Promise<Authorization>
 }
 
-export {
+export type {
   CreateAuthorizationParams,
   Authorization,
   UpdateAuthorizationParams,

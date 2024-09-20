@@ -27,7 +27,7 @@ type IWaterHistoryService = {
   setAmountHistory(data: AmountHistoryParams): Promise<void>
 }
 
-export {
+export type {
   IWaterHistoryService,
   AddNotificationParams,
   WaterHistory,

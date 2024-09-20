@@ -44,7 +44,7 @@ interface IMedicalReminderService extends INotifications {
   delete(data: DeleteMedicalReminderParams): Promise<void>
 }
 
-export {
+export type {
   IMedicalReminderService,
   MedicalReminderParams,
   CreateMedicalReminderStringParams,

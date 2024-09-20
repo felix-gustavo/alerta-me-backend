@@ -65,15 +65,14 @@ interface IMedicationReminderService {
   delete(data: DeleteMedicationReminderParams): Promise<void>
 }
 
-export {
+export { DayOfWeek, DayOfWeekTranslations }
+export type {
   IMedicationReminderService,
   CreateMedicationReminderParams,
   GetMedicationReminderParams,
   UpdateMedicationReminderParams,
   DeleteMedicationReminderParams,
   MedicationReminder,
-  DayOfWeek,
-  DayOfWeekTranslations,
   Dose,
   DoseRaw,
   Dosage,

@@ -34,7 +34,7 @@ interface IWaterReminderService extends INotifications {
   update(data: UpdateWaterReminderParams): Promise<WaterReminder>
 }
 
-export {
+export type {
   IWaterReminderService,
   WaterReminderParams,
   CreateWaterReminderStringParams,

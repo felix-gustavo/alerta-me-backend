@@ -98,4 +98,5 @@ class WaterScheduler extends AmazonScheduler<WaterSchedulerInput> {
   }
 }
 
-export { WaterSchedulerInput, WaterScheduler }
+export { WaterScheduler }
+export type { WaterSchedulerInput }
