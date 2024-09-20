@@ -2,14 +2,14 @@
   "name": "alerta-me-backend",
   "version": "1.0.0",
   "description": "",
-  "main": "index.ts",
+  "main": "./api/index.ts",
   "type": "module",
   "engines": {
     "node": "20.x"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "tsx app/index.ts",
+    "start": "tsx api/index.ts",
     "lint": "eslint ."
   },
   "author": "",

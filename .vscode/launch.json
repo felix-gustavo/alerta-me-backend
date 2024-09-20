@@ -5,10 +5,34 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "command": "npm run dev",
-      "name": "Run npm dev",
+      "name": "tsx",
+      "type": "node",
       "request": "launch",
-      "type": "node-terminal"
+
+      // Debug current file in VSCode
+      "program": "api/index.ts",
+
+      /*
+       * Path to tsx binary
+       * Assuming locally installed
+       */
+      "runtimeExecutable": "tsx",
+
+      /*
+       * Open terminal when debugging starts (Optional)
+       * Useful to see console.logs
+       */
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+
+      // Files to exclude from debugger (e.g. call stack)
+      "skipFiles": [
+        // Node.js internal core modules
+        "<node_internals>/**",
+
+        // Ignore all dependencies (optional)
+        "${workspaceFolder}/node_modules/**"
+      ]
     }
   ]
 }
