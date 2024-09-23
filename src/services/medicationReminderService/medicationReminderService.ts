@@ -109,7 +109,7 @@ class MedicationReminderService implements IMedicationReminderService {
     return {
       ...dataToSave,
       id: docRef.id,
-    } as MedicationReminder
+    } as unknown as MedicationReminder
   }
 
   get = async ({
