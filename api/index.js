@@ -1,1 +1,2 @@
-export default '../dist/index.cjs'
+import api from '../dist/index.cjs'
+export default api
