@@ -6,7 +6,9 @@
   "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
   "parser": "@typescript-eslint/parser",
   "plugins": ["@typescript-eslint", "import"],
+  "ignorePatterns": ["dist"],
   "rules": {
+    "@typescript-eslint/no-unused-vars": "off",
     "quotes": [
       "error",
       "single",
@@ -29,14 +31,14 @@
       }
     ],
     "no-return-await": "warn",
-    "import/extensions": [
-      "error",
-      "ignorePackages",
-      {
-        "ts": "always",
-        "js": "never"
-      }
-    ],
+    // "import/extensions": [
+    //   "error",
+    //   "ignorePackages",
+    //   {
+    //     "ts": "always",
+    //     "js": "never"
+    //   }
+    // ],
     "sort-imports": [
       "error",
       {

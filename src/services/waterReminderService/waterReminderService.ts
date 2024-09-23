@@ -4,18 +4,18 @@ import {
   UpdateWaterReminderParams,
   WaterReminder,
   WaterReminderParams,
-} from './iWaterReminderService.ts'
+} from './iWaterReminderService'
 import {
   NotificationDeniedException,
   UnprocessableException,
-} from '../../exceptions/index.ts'
+} from '../../exceptions/index'
 import {
   WaterScheduler,
   WaterSchedulerInput,
-} from '../amazonSchedulers/waterScheduler.ts'
-import { DateFormat } from '../../utils/dateFormat.ts'
-import { IAuthorizationService } from '../authorizationService/iAuthorizationService.ts'
-import { IUsersService } from '../usersService/iUsersService.ts'
+} from '../amazonSchedulers/waterScheduler'
+import { DateFormat } from '../../utils/dateFormat'
+import { IAuthorizationService } from '../authorizationService/iAuthorizationService'
+import { IUsersService } from '../usersService/iUsersService'
 import { getFirestore } from 'firebase-admin/firestore'
 
 type WaterReminderSchedulerInput = {
@@ -30,7 +30,7 @@ class WaterReminderService implements IWaterReminderService {
   constructor(
     private readonly authorizationService: IAuthorizationService,
     private readonly usersService: IUsersService,
-    private readonly waterScheduler: WaterScheduler
+    private readonly waterScheduler: WaterScheduler,
   ) {}
 
   create = async ({
@@ -81,7 +81,7 @@ class WaterReminderService implements IWaterReminderService {
             ask_user_id,
           },
           suggested_amount: Math.trunc(
-            dataToSave.amount / dataToSave.reminders.length
+            dataToSave.amount / dataToSave.reminders.length,
           ),
         },
       })
@@ -170,7 +170,7 @@ class WaterReminderService implements IWaterReminderService {
   }
 
   private _waterSchedulerFormatInput(
-    data: WaterReminderSchedulerInput
+    data: WaterReminderSchedulerInput,
   ): WaterSchedulerInput {
     return {
       interval: data.waterReminder.interval,
@@ -182,7 +182,7 @@ class WaterReminderService implements IWaterReminderService {
         },
         suggested_amount: Math.trunc(
           data.waterReminder.amount /
-            (data.waterReminder.reminders?.length ?? 1) // POSSIVEL PROBLEMA: NÃO ERA data.waterReminder.reminders, MAS SOMENTE reminders
+            (data.waterReminder.reminders?.length ?? 1), // POSSIVEL PROBLEMA: NÃO ERA data.waterReminder.reminders, MAS SOMENTE reminders
         ),
       },
     }

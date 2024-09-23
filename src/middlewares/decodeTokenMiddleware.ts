@@ -3,10 +3,10 @@ import {
   SessionExpiredException,
   UnauthorizedException,
   WithoutTokenException,
-} from '../exceptions/index.ts'
+} from '../exceptions/index'
 import axios, { AxiosError } from 'axios'
 import { FirebaseError } from 'firebase-admin/lib/utils/error'
-import { UserProfile } from '../services/usersService/iUsersService.ts'
+import { UserProfile } from '../services/usersService/iUsersService'
 import { getAuth } from 'firebase-admin/auth'
 
 interface CustomRequest extends Request {

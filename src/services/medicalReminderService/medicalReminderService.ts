@@ -6,28 +6,28 @@ import {
   MedicalReminder,
   MedicalReminderParams,
   UpdateMedicalReminderParams,
-} from './iMedicalReminderService.ts'
+} from './iMedicalReminderService'
 import {
   NotFoundException,
   NotificationDeniedException,
   UnprocessableException,
   ValidationException,
-} from '../../exceptions/index.ts'
+} from '../../exceptions/index'
 import { Timestamp, getFirestore } from 'firebase-admin/firestore'
-import { IAuthorizationService } from '../authorizationService/iAuthorizationService.ts'
-import { IUsersService } from '../usersService/iUsersService.ts'
-import { MedicalScheduler } from '../amazonSchedulers/medicalScheduler.ts'
+import { IAuthorizationService } from '../authorizationService/iAuthorizationService'
+import { IUsersService } from '../usersService/iUsersService'
+import { MedicalScheduler } from '../amazonSchedulers/medicalScheduler'
 import { isBefore } from 'date-fns'
 
 class MedicalReminderService implements IMedicalReminderService {
   constructor(
     private readonly authorizationService: IAuthorizationService,
     private readonly usersService: IUsersService,
-    private readonly medicalScheduler: MedicalScheduler
+    private readonly medicalScheduler: MedicalScheduler,
   ) {}
 
   create = async (
-    data: CreateMedicalReminderStringParams
+    data: CreateMedicalReminderStringParams,
   ): Promise<MedicalReminder> => {
     const authorization = await this.authorizationService.checkIsAuthorized({
       userId: data.userId,
@@ -37,7 +37,7 @@ class MedicalReminderService implements IMedicalReminderService {
 
     if (isBefore(datetime, new Date())) {
       throw new ValidationException(
-        'Campo datetime inválido, insira um horário futuro'
+        'Campo datetime inválido, insira um horário futuro',
       )
     }
 
@@ -58,7 +58,7 @@ class MedicalReminderService implements IMedicalReminderService {
     const docRef = await colRef.add(dataToSave)
 
     const userElderly = await this.usersService.getElderlyById(
-      authorization.elderly
+      authorization.elderly,
     )
     if (userElderly == null) throw new UnprocessableException()
 
@@ -192,7 +192,7 @@ class MedicalReminderService implements IMedicalReminderService {
 
       if (isBefore(datetime, new Date())) {
         throw new ValidationException(
-          'Campo datetime inválido, insira um horário futuro'
+          'Campo datetime inválido, insira um horário futuro',
         )
       }
     }

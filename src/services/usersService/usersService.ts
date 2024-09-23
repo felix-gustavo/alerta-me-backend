@@ -5,12 +5,12 @@ import {
   UpdateParams,
   UserElderly,
   UserProfile,
-} from './iUsersService.ts'
+} from './iUsersService'
 import {
   NotFoundException,
   UnauthorizedException,
-} from '../../exceptions/index.ts'
-import { AuthorizationService } from '../authorizationService/authorizationService.ts'
+} from '../../exceptions/index'
+import { AuthorizationService } from '../authorizationService/authorizationService'
 import { getAuth } from 'firebase-admin/auth'
 import { getFirestore } from 'firebase-admin/firestore'
 
@@ -134,7 +134,7 @@ class UsersService implements IUsersService {
       authorization.status !== 'aprovado'
     ) {
       throw new UnauthorizedException(
-        'Usuário não tem permissão para excluir o usuário idoso fornecido'
+        'Usuário não tem permissão para excluir o usuário idoso fornecido',
       )
     }
     await authorizationService.delete({ userId })

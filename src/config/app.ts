@@ -1,9 +1,9 @@
 import 'dotenv/config'
 import 'express-async-errors'
-import './firebase.ts'
-import * as configRoutes from './configRoutes.ts'
+import './firebase'
+import * as configRoutes from './configRoutes'
 import cors from 'cors'
-import { errorMiddleware } from '../middlewares/errorMiddleware.ts'
+import { errorMiddleware } from '../middlewares/errorMiddleware'
 import express from 'express'
 
 const app = express()

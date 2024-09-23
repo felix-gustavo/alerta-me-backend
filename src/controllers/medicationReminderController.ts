@@ -2,8 +2,8 @@ import {
   CreateMedicationReminderParams,
   IMedicationReminderService,
   UpdateMedicationReminderParams,
-} from '../services/medicationReminderService/iMedicationReminderService.ts'
-import { CustomRequest } from '../middlewares/decodeTokenMiddleware.ts'
+} from '../services/medicationReminderService/iMedicationReminderService'
+import { CustomRequest } from '../middlewares/decodeTokenMiddleware'
 import { Response } from 'express'
 
 class MedicationReminderController {

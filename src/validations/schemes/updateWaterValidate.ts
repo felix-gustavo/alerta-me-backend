@@ -1,4 +1,4 @@
-import { createWaterValidate } from './createWaterValidate.ts'
+import { createWaterValidate } from './createWaterValidate'
 
 const updateWaterValidate = [
   ...createWaterValidate.map((check) => check.optional()),

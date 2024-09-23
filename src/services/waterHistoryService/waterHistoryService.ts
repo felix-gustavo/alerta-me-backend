@@ -3,10 +3,10 @@ import {
   AmountHistoryParams,
   IWaterHistoryService,
   WaterHistory,
-} from './iWaterHistoryService.ts'
+} from './iWaterHistoryService'
 import { Timestamp, getFirestore } from 'firebase-admin/firestore'
-import { IAuthorizationService } from '../authorizationService/iAuthorizationService.ts'
-import { UnauthorizedException } from '../../exceptions/index.ts'
+import { IAuthorizationService } from '../authorizationService/iAuthorizationService'
+import { UnauthorizedException } from '../../exceptions/index'
 
 class WaterHistoryService implements IWaterHistoryService {
   constructor(private readonly authorizationService: IAuthorizationService) {}
@@ -52,7 +52,7 @@ class WaterHistoryService implements IWaterHistoryService {
     const startOfDay = new Date(
       now.getFullYear(),
       now.getMonth(),
-      now.getDate()
+      now.getDate(),
     )
 
     const docRefUser = getFirestore()
@@ -95,7 +95,7 @@ class WaterHistoryService implements IWaterHistoryService {
     const startOfDay = new Date(
       now.getFullYear(),
       now.getMonth(),
-      now.getDate()
+      now.getDate(),
     )
 
     const docRefUser = getFirestore()

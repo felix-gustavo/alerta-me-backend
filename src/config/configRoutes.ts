@@ -1,28 +1,28 @@
 import { Express, Router } from 'express'
-import { AuthorizationController } from '../controllers/authorizationController.ts'
-import { AuthorizationRoute } from '../routes/authorization/index.ts'
-import { AuthorizationService } from '../services/authorizationService/authorizationService.ts'
-import { MedicalReminderController } from '../controllers/medicalReminderController.ts'
-import { MedicalReminderRoute } from '../routes/medicalReminder/index.ts'
-import { MedicalReminderService } from '../services/medicalReminderService/medicalReminderService.ts'
-import { MedicalScheduler } from '../services/amazonSchedulers/medicalScheduler.ts'
-import { MedicationReminderController } from '../controllers/medicationReminderController.ts'
-import { MedicationReminderRoute } from '../routes/medicationReminder/index.ts'
-import { MedicationReminderService } from '../services/medicationReminderService/medicationReminderService.ts'
-import { ProactiveController } from '../controllers/proactiveController.ts'
-import { ProactiveRoute } from '../routes/proactive/index.ts'
-import { ProactiveService } from '../services/proactiveService/proactiveService.ts'
-import { UserRoute } from '../routes/user/index.ts'
-import { UsersController } from '../controllers/usersController.ts'
-import { UsersService } from '../services/usersService/usersService.ts'
-import { WaterHistoryService } from '../services/waterHistoryService/waterHistoryService.ts'
-import { WaterReminderController } from '../controllers/waterReminderController.ts'
-import { WaterReminderHistoryController } from '../controllers/waterReminderHistoryController.ts'
-import { WaterReminderRoute } from '../routes/waterReminder/index.ts'
-import { WaterReminderService } from '../services/waterReminderService/waterReminderService.ts'
-import { WaterScheduler } from '../services/amazonSchedulers/waterScheduler.ts'
-import { decodeFirebaseTokenMiddleware } from '../middlewares/decodeTokenMiddleware.ts'
-import { helloRoute } from '../routes/hello/index.ts'
+import { AuthorizationController } from '../controllers/authorizationController'
+import { AuthorizationRoute } from '../routes/authorization/index'
+import { AuthorizationService } from '../services/authorizationService/authorizationService'
+import { MedicalReminderController } from '../controllers/medicalReminderController'
+import { MedicalReminderRoute } from '../routes/medicalReminder/index'
+import { MedicalReminderService } from '../services/medicalReminderService/medicalReminderService'
+import { MedicalScheduler } from '../services/amazonSchedulers/medicalScheduler'
+import { MedicationReminderController } from '../controllers/medicationReminderController'
+import { MedicationReminderRoute } from '../routes/medicationReminder/index'
+import { MedicationReminderService } from '../services/medicationReminderService/medicationReminderService'
+import { ProactiveController } from '../controllers/proactiveController'
+import { ProactiveRoute } from '../routes/proactive/index'
+import { ProactiveService } from '../services/proactiveService/proactiveService'
+import { UserRoute } from '../routes/user/index'
+import { UsersController } from '../controllers/usersController'
+import { UsersService } from '../services/usersService/usersService'
+import { WaterHistoryService } from '../services/waterHistoryService/waterHistoryService'
+import { WaterReminderController } from '../controllers/waterReminderController'
+import { WaterReminderHistoryController } from '../controllers/waterReminderHistoryController'
+import { WaterReminderRoute } from '../routes/waterReminder/index'
+import { WaterReminderService } from '../services/waterReminderService/waterReminderService'
+import { WaterScheduler } from '../services/amazonSchedulers/waterScheduler'
+import { decodeFirebaseTokenMiddleware } from '../middlewares/decodeTokenMiddleware'
+import { helloRoute } from '../routes/hello/index'
 
 const setup = (app: Express) => {
   const routes = Router()
@@ -34,15 +34,15 @@ const setup = (app: Express) => {
   const waterReminderService = new WaterReminderService(
     authorizationService,
     usersService,
-    waterScheduler
+    waterScheduler,
   )
   const medicalReminderService = new MedicalReminderService(
     authorizationService,
     usersService,
-    medicalScheduler
+    medicalScheduler,
   )
   const medicationReminderService = new MedicationReminderService(
-    authorizationService
+    authorizationService,
   )
   const proactiveService = new ProactiveService(usersService, [
     waterReminderService,
@@ -50,20 +50,20 @@ const setup = (app: Express) => {
   ])
 
   const authorizationController = new AuthorizationController(
-    authorizationService
+    authorizationService,
   )
   const usersController = new UsersController(usersService)
   const waterReminderController = new WaterReminderController(
-    waterReminderService
+    waterReminderService,
   )
   const waterReminderHistoryController = new WaterReminderHistoryController(
-    new WaterHistoryService(authorizationService)
+    new WaterHistoryService(authorizationService),
   )
   const medicalReminderController = new MedicalReminderController(
-    medicalReminderService
+    medicalReminderService,
   )
   const medicationReminderController = new MedicationReminderController(
-    medicationReminderService
+    medicationReminderService,
   )
   const proactiveController = new ProactiveController(proactiveService)
 
@@ -71,13 +71,13 @@ const setup = (app: Express) => {
   const usersRoute = new UserRoute(usersController)
   const waterReminderRoute = new WaterReminderRoute(
     waterReminderController,
-    waterReminderHistoryController
+    waterReminderHistoryController,
   )
   const medicalReminderRoute = new MedicalReminderRoute(
-    medicalReminderController
+    medicalReminderController,
   )
   const medicationReminderRoute = new MedicationReminderRoute(
-    medicationReminderController
+    medicationReminderController,
   )
   const proactiveRoute = new ProactiveRoute(proactiveController)
 
@@ -88,12 +88,12 @@ const setup = (app: Express) => {
   routes.use(
     '/medical-reminders',
     decodeFirebaseTokenMiddleware,
-    medicalReminderRoute.routes()
+    medicalReminderRoute.routes(),
   )
   routes.use(
     '/medication-reminders',
     decodeFirebaseTokenMiddleware,
-    medicationReminderRoute.routes()
+    medicationReminderRoute.routes(),
   )
   routes.use('/proactive-sub', proactiveRoute.routes())
 

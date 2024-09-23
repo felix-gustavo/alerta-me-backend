@@ -1,5 +1,5 @@
 import { body } from 'express-validator'
-import { paramValidateScheme } from './paramValidateScheme.ts'
+import { paramValidateScheme } from './paramValidateScheme'
 
 const setHistoryValidateScheme = [
   ...paramValidateScheme('id'),

@@ -1,5 +1,5 @@
-import { CustomRequest } from '../middlewares/decodeTokenMiddleware.ts'
-import { IAuthorizationService } from '../services/authorizationService/iAuthorizationService.ts'
+import { CustomRequest } from '../middlewares/decodeTokenMiddleware'
+import { IAuthorizationService } from '../services/authorizationService/iAuthorizationService'
 import { Response } from 'express'
 
 class AuthorizationController {

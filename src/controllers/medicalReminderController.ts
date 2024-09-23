@@ -2,10 +2,10 @@ import {
   CreateMedicalReminderStringParams,
   IMedicalReminderService,
   UpdateMedicalReminderParams,
-} from '../services/medicalReminderService/iMedicalReminderService.ts'
-import { CustomRequest } from '../middlewares/decodeTokenMiddleware.ts'
+} from '../services/medicalReminderService/iMedicalReminderService'
+import { CustomRequest } from '../middlewares/decodeTokenMiddleware'
 import { Response } from 'express'
-import { UnauthorizedException } from '../exceptions/index.ts'
+import { UnauthorizedException } from '../exceptions/index'
 
 class MedicalReminderController {
   constructor(private readonly service: IMedicalReminderService) {}

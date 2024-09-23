@@ -2,11 +2,11 @@ import {
   CustomRequest,
   decodeAmazonTokenMiddleware,
   decodeFirebaseTokenMiddleware,
-} from '../../middlewares/decodeTokenMiddleware.ts'
+} from '../../middlewares/decodeTokenMiddleware'
 import { NextFunction, Response, Router } from 'express'
-import { UsersController } from '../../controllers/usersController.ts'
-import { handleValidationErrors } from '../../validations/handleValidationErrors.ts'
-import { paramValidateScheme } from '../../validations/schemes/paramValidateScheme.ts'
+import { UsersController } from '../../controllers/usersController'
+import { handleValidationErrors } from '../../validations/handleValidationErrors'
+import { paramValidateScheme } from '../../validations/schemes/paramValidateScheme'
 
 class UserRoute {
   constructor(private readonly controller: UsersController) {}
@@ -17,7 +17,7 @@ class UserRoute {
     userRoute.post(
       '/elderly',
       decodeAmazonTokenMiddleware,
-      this.controller.createElderly
+      this.controller.createElderly,
     )
 
     userRoute.get(
@@ -25,7 +25,7 @@ class UserRoute {
       paramValidateScheme('id'),
       handleValidationErrors,
       decodeFirebaseTokenMiddleware,
-      this.controller.getElderlyById
+      this.controller.getElderlyById,
     )
 
     userRoute.get(
@@ -39,7 +39,7 @@ class UserRoute {
           ? decodeAmazonTokenMiddleware(req, res, next)
           : decodeFirebaseTokenMiddleware(req, res, next)
       },
-      this.controller.getById
+      this.controller.getById,
     )
 
     userRoute.get(
@@ -51,7 +51,7 @@ class UserRoute {
           ? decodeAmazonTokenMiddleware(req, res, next)
           : decodeFirebaseTokenMiddleware(req, res, next)
       },
-      this.controller.get
+      this.controller.get,
     )
 
     userRoute.delete('/', decodeFirebaseTokenMiddleware, this.controller.delete)
@@ -61,7 +61,7 @@ class UserRoute {
       paramValidateScheme('id'),
       handleValidationErrors,
       decodeFirebaseTokenMiddleware,
-      this.controller.deleteElderly
+      this.controller.deleteElderly,
     )
 
     return userRoute

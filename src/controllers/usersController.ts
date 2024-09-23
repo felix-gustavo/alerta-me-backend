@@ -1,10 +1,10 @@
 import {
   IUsersService,
   UserProfile,
-} from '../services/usersService/iUsersService.ts'
+} from '../services/usersService/iUsersService'
 import { Request, Response } from 'express'
-import { CustomRequest } from '../middlewares/decodeTokenMiddleware.ts'
-import { NotFoundException } from '../exceptions/index.ts'
+import { CustomRequest } from '../middlewares/decodeTokenMiddleware'
+import { NotFoundException } from '../exceptions/index'
 
 class UsersController {
   constructor(private readonly userService: IUsersService) {}
@@ -18,7 +18,7 @@ class UsersController {
         name: user.name,
         email: user.email,
         ask_user_id: null,
-      })
+      }),
     )
   }
 

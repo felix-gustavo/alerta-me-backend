@@ -1,11 +1,11 @@
-import { INotifications } from '../iNotifications.ts'
-import { IProactiveService } from './iProactiveService.ts'
-import { IUsersService } from '../usersService/iUsersService.ts'
+import { INotifications } from '../iNotifications'
+import { IProactiveService } from './iProactiveService'
+import { IUsersService } from '../usersService/iUsersService'
 
 class ProactiveService implements IProactiveService {
   constructor(
     private readonly usersService: IUsersService,
-    private readonly reminderServices: INotifications[]
+    private readonly reminderServices: INotifications[],
   ) {}
 
   async proactiveSubAccepted(data: {
@@ -20,7 +20,7 @@ class ProactiveService implements IProactiveService {
     })
 
     await Promise.all(
-      this.reminderServices.map((e) => e.enableNotifications(data.elderlyId))
+      this.reminderServices.map((e) => e.enableNotifications(data.elderlyId)),
     )
 
     return data.elderlyId
@@ -35,7 +35,7 @@ class ProactiveService implements IProactiveService {
     })
 
     await Promise.all(
-      this.reminderServices.map((e) => e.disableNotifications(data.elderlyId))
+      this.reminderServices.map((e) => e.disableNotifications(data.elderlyId)),
     )
 
     return data.elderlyId

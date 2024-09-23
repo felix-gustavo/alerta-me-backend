@@ -4,14 +4,14 @@ import {
   CreateAuthorizationParams,
   IAuthorizationService,
   UpdateAuthorizationParams,
-} from './iAuthorizationService.ts'
+} from './iAuthorizationService'
 import {
   NotFoundException,
   UnauthorizedException,
   UnprocessableException,
-} from '../../exceptions/index.ts'
+} from '../../exceptions/index'
 import { Timestamp, getFirestore } from 'firebase-admin/firestore'
-import { IUsersService } from '../usersService/iUsersService.ts'
+import { IUsersService } from '../usersService/iUsersService'
 
 class AuthorizationService implements IAuthorizationService {
   constructor(private readonly usersService: IUsersService) {}
@@ -108,7 +108,7 @@ class AuthorizationService implements IAuthorizationService {
 
     if (docData != undefined && docData.elderly !== elderlyId)
       throw new UnauthorizedException(
-        'O usuário não tem permissão para editar esse documento'
+        'O usuário não tem permissão para editar esse documento',
       )
 
     await docRef.update({ status })

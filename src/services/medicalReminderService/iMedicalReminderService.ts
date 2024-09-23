@@ -1,4 +1,4 @@
-import { INotifications } from '../iNotifications.ts'
+import { INotifications } from '../iNotifications'
 
 type MedicalReminder = {
   id: string

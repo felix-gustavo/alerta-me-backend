@@ -1,12 +1,12 @@
 import {
   decodeAmazonTokenMiddleware,
   decodeFirebaseTokenMiddleware,
-} from '../../middlewares/decodeTokenMiddleware.ts'
-import { AuthorizationController } from '../../controllers/authorizationController.ts'
+} from '../../middlewares/decodeTokenMiddleware'
+import { AuthorizationController } from '../../controllers/authorizationController'
 import { Router } from 'express'
-import { createAuthorizationValidateScheme } from '../../validations/schemes/createAuthorizationValidate.ts'
-import { handleValidationErrors } from '../../validations/handleValidationErrors.ts'
-import { paramValidateScheme } from '../../validations/schemes/paramValidateScheme.ts'
+import { createAuthorizationValidateScheme } from '../../validations/schemes/createAuthorizationValidate'
+import { handleValidationErrors } from '../../validations/handleValidationErrors'
+import { paramValidateScheme } from '../../validations/schemes/paramValidateScheme'
 
 class AuthorizationRoute {
   constructor(private readonly controller: AuthorizationController) {}
@@ -19,19 +19,19 @@ class AuthorizationRoute {
       createAuthorizationValidateScheme,
       handleValidationErrors,
       decodeFirebaseTokenMiddleware,
-      this.controller.create
+      this.controller.create,
     )
 
     authorizationRoute.get(
       '/user',
       decodeFirebaseTokenMiddleware,
-      this.controller.getAuthorizationByUser
+      this.controller.getAuthorizationByUser,
     )
 
     authorizationRoute.get(
       '/elderly',
       decodeAmazonTokenMiddleware,
-      this.controller.getAuthorizationByElderly
+      this.controller.getAuthorizationByElderly,
     )
 
     authorizationRoute.put(
@@ -39,13 +39,13 @@ class AuthorizationRoute {
       paramValidateScheme('id'),
       handleValidationErrors,
       decodeAmazonTokenMiddleware,
-      this.controller.approvedAuthorizationElderly
+      this.controller.approvedAuthorizationElderly,
     )
 
     authorizationRoute.delete(
       '/',
       decodeFirebaseTokenMiddleware,
-      this.controller.deleteAuthorization
+      this.controller.deleteAuthorization,
     )
 
     return authorizationRoute

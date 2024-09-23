@@ -1,5 +1,5 @@
-import { createMedicationValidate } from './createMedicationValidate.ts'
-import { paramValidateScheme } from './paramValidateScheme.ts'
+import { createMedicationValidate } from './createMedicationValidate'
+import { paramValidateScheme } from './paramValidateScheme'
 
 const updateMedicationValidate = [
   ...paramValidateScheme('id'),

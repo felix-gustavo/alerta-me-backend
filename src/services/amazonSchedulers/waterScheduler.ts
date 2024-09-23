@@ -1,4 +1,4 @@
-import { AmazonScheduler } from './scheduler.ts'
+import { AmazonScheduler } from './scheduler'
 import { CreateScheduleCommandInput } from '@aws-sdk/client-scheduler'
 import { addDays } from 'date-fns'
 

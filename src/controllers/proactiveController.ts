@@ -1,5 +1,5 @@
-import { CustomRequest } from '../middlewares/decodeTokenMiddleware.ts'
-import { IProactiveService } from '../services/proactiveService/iProactiveService.ts'
+import { CustomRequest } from '../middlewares/decodeTokenMiddleware'
+import { IProactiveService } from '../services/proactiveService/iProactiveService'
 import { Response } from 'express'
 
 class ProactiveController {

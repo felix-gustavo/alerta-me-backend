@@ -9,13 +9,13 @@ import {
   IMedicationReminderService,
   MedicationReminder,
   UpdateMedicationReminderParams,
-} from './iMedicationReminderService.ts'
+} from './iMedicationReminderService'
 import {
   NotFoundException,
   UnprocessableException,
-} from '../../exceptions/index.ts'
-import { DateFormat } from '../../utils/dateFormat.ts'
-import { IAuthorizationService } from '../authorizationService/iAuthorizationService.ts'
+} from '../../exceptions/index'
+import { DateFormat } from '../../utils/dateFormat'
+import { IAuthorizationService } from '../authorizationService/iAuthorizationService'
 import { getFirestore } from 'firebase-admin/firestore'
 
 class MedicationReminderService implements IMedicationReminderService {
@@ -93,7 +93,7 @@ class MedicationReminderService implements IMedicationReminderService {
     const duplicateDosage = this.findDuplicateDosageDays(dose)
     if (duplicateDosage)
       throw new UnprocessableException(
-        `Horário duplicado em ${duplicateDosage}`
+        `Horário duplicado em ${duplicateDosage}`,
       )
 
     const dataToSave = {
@@ -168,7 +168,7 @@ class MedicationReminderService implements IMedicationReminderService {
       const duplicateDosage = this.findDuplicateDosageDays(dose)
       if (duplicateDosage)
         throw new UnprocessableException(
-          `Horários duplicados [${duplicateDosage}]`
+          `Horários duplicados [${duplicateDosage}]`,
         )
     }
 

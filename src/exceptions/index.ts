@@ -1,4 +1,4 @@
-import { CustomError } from './customError.ts'
+import { CustomError } from './customError'
 
 class ValidationException extends CustomError {
   constructor(message: string) {
@@ -53,7 +53,7 @@ class NotificationDeniedException extends CustomError {
     super(
       message ??
         'Pessoa idosa não forneceu permissão para receber notificações. Sugiro que acesse o aplicativo Alexa para alterara permissão antes de criar o lembrete',
-      422
+      422,
     )
   }
 }

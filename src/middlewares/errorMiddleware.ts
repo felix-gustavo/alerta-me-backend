@@ -1,12 +1,16 @@
-import { Request, Response } from 'express'
-import { CustomError } from '../exceptions/customError.ts'
+import { NextFunction, Request, Response } from 'express'
+import { CustomError } from '../exceptions/customError'
 
 export const errorMiddleware = (
-  error: CustomError,
+  err: Error,
   _req: Request,
-  res: Response
+  res: Response,
+  _next: NextFunction,
 ) => {
-  const statusCode = error.code ?? 500
-  const message = error.code ? error.message : 'Erro interno do servidor'
-  return res.status(statusCode).json(message)
+  if (err instanceof CustomError) {
+    const { code, message } = err
+    return res.status(code).json(message)
+  }
+
+  return res.status(500).json('Erro interno do servidor')
 }
