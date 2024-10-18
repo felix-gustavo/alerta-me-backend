@@ -85,11 +85,7 @@ const setup = (app: Express) => {
   routes.use('/authorizations', authorizationRoute.routes())
   routes.use('/users', usersRoute.routes())
   routes.use('/water-reminders', waterReminderRoute.routes())
-  routes.use(
-    '/medical-reminders',
-    decodeFirebaseTokenMiddleware,
-    medicalReminderRoute.routes(),
-  )
+  routes.use('/medical-reminders', medicalReminderRoute.routes())
   routes.use(
     '/medication-reminders',
     decodeFirebaseTokenMiddleware,
