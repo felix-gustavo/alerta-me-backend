@@ -34,8 +34,12 @@ class MedicalReminderService implements IMedicalReminderService {
     })
 
     const datetime = new Date(data.datetime)
+    const now = new Date();
 
-    if (isBefore(datetime, new Date())) {
+    console.log('data.datetime: ', datetime)
+    console.log('now: ', now)
+
+    if (isBefore(datetime, now)) {
       throw new ValidationException(
         'Campo datetime inválido, insira um horário futuro',
       )
