@@ -17,7 +17,7 @@ import { Timestamp, getFirestore } from 'firebase-admin/firestore'
 import { IAuthorizationService } from '../authorizationService/iAuthorizationService'
 import { IUsersService } from '../usersService/iUsersService'
 import { MedicalScheduler } from '../amazonSchedulers/medicalScheduler'
-import { isBefore } from 'date-fns'
+import { addHours, isBefore } from 'date-fns'
 
 class MedicalReminderService implements IMedicalReminderService {
   constructor(
@@ -33,8 +33,8 @@ class MedicalReminderService implements IMedicalReminderService {
       userId: data.userId,
     })
 
-    const datetime = new Date(data.datetime)
-    const now = new Date();
+    const datetime = addHours(new Date(data.datetime), 3)
+    const now = new Date(Date.now())
 
     console.log('data.datetime: ', datetime)
     console.log('now: ', now)
@@ -192,9 +192,10 @@ class MedicalReminderService implements IMedicalReminderService {
     })
 
     if (data.datetime) {
-      const datetime = new Date(data.datetime)
+      const datetime = addHours(new Date(data.datetime), 3)
+      const now = new Date(Date.now())
 
-      if (isBefore(datetime, new Date())) {
+      if (isBefore(datetime, now)) {
         throw new ValidationException(
           'Campo datetime inválido, insira um horário futuro',
         )
