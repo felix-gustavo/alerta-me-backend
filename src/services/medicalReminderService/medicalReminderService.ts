@@ -35,14 +35,14 @@ class MedicalReminderService implements IMedicalReminderService {
     })
 
     const datetime = new Date(data.datetime)
+    const datetimeUTC = addHours(datetime, 3)
     const now = new Date(Date.now())
-    const zonedNow = toZonedTime(now, 'America/Fortaleza')
 
     console.log('datetime: ', datetime)
+    console.log('datetimeUTC: ', datetimeUTC)
     console.log('now: ', now)
-    console.log('zonedDate: ', zonedNow)
 
-    if (isBefore(datetime, zonedNow)) {
+    if (isBefore(datetimeUTC, now)) {
       throw new ValidationException(
         'Campo datetime inválido, insira um horário futuro',
       )
@@ -57,7 +57,7 @@ class MedicalReminderService implements IMedicalReminderService {
       address: data.address,
       medic_name: data.medic_name,
       specialty: data.specialty,
-      datetime,
+      datetime: datetimeUTC,
       active: !!data.active,
       attended: null,
     }
@@ -194,16 +194,18 @@ class MedicalReminderService implements IMedicalReminderService {
       userId,
     })
 
+    let datetimeUTC: Date = null
+
     if (data.datetime) {
       const datetime = new Date(data.datetime)
+      datetimeUTC = addHours(datetime, 3)
       const now = new Date(Date.now())
-      const zonedNow = toZonedTime(now, 'America/Fortaleza')
 
       console.log('datetime: ', datetime)
+      console.log('datetimeUTC: ', datetimeUTC)
       console.log('now: ', now)
-      console.log('zonedDate: ', zonedNow)
 
-      if (isBefore(datetime, zonedNow)) {
+      if (isBefore(datetimeUTC, now)) {
         throw new ValidationException(
           'Campo datetime inválido, insira um horário futuro',
         )
@@ -227,9 +229,7 @@ class MedicalReminderService implements IMedicalReminderService {
     const dataToUpdate: MedicalReminderParams = {
       medic_name: data.medic_name ?? docData.medic_name,
       specialty: data.specialty ?? docData.specialty,
-      datetime: data.datetime
-        ? toZonedTime(new Date(data.datetime), 'America/Fortaleza')
-        : docData.datetime,
+      datetime: datetimeUTC ?? docData.datetime,
       address: data.address ?? docData.address,
       active: data.active != undefined ? !!data.active : docData.active,
       attended: data.attended != undefined ? !!data.attended : docData.attended,
