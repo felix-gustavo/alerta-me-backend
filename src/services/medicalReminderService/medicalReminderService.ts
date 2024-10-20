@@ -35,12 +35,14 @@ class MedicalReminderService implements IMedicalReminderService {
     })
 
     const datetime = new Date(data.datetime)
-    const zonedDate = toZonedTime(datetime, 'America/Fortaleza')
-    console.log('zonedDate: ', zonedDate)
     const now = new Date(Date.now())
-    console.log('now: ', now)
+    const zonedNow = toZonedTime(now, 'America/Fortaleza')
 
-    if (isBefore(zonedDate, now)) {
+    console.log('datetime: ', datetime)
+    console.log('now: ', now)
+    console.log('zonedDate: ', zonedNow)
+
+    if (isBefore(datetime, zonedNow)) {
       throw new ValidationException(
         'Campo datetime inválido, insira um horário futuro',
       )
@@ -195,12 +197,13 @@ class MedicalReminderService implements IMedicalReminderService {
     if (data.datetime) {
       const datetime = new Date(data.datetime)
       const now = new Date(Date.now())
+      const zonedNow = toZonedTime(now, 'America/Fortaleza')
 
-      const zonedDate = toZonedTime(datetime, 'America/Fortaleza')
-      console.log('zonedDate: ', zonedDate)
+      console.log('datetime: ', datetime)
       console.log('now: ', now)
+      console.log('zonedDate: ', zonedNow)
 
-      if (isBefore(zonedDate, now)) {
+      if (isBefore(datetime, zonedNow)) {
         throw new ValidationException(
           'Campo datetime inválido, insira um horário futuro',
         )
