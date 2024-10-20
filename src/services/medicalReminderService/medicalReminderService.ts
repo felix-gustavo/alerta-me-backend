@@ -18,6 +18,7 @@ import { IAuthorizationService } from '../authorizationService/iAuthorizationSer
 import { IUsersService } from '../usersService/iUsersService'
 import { MedicalScheduler } from '../amazonSchedulers/medicalScheduler'
 import { addHours, isBefore } from 'date-fns'
+import { toZonedTime } from 'date-fns-tz'
 
 class MedicalReminderService implements IMedicalReminderService {
   constructor(
@@ -33,13 +34,13 @@ class MedicalReminderService implements IMedicalReminderService {
       userId: data.userId,
     })
 
-    const datetime = addHours(new Date(data.datetime), 3)
+    const datetime = new Date(data.datetime)
+    const zonedDate = toZonedTime(datetime, 'America/Fortaleza')
+    console.log('zonedDate: ', zonedDate)
     const now = new Date(Date.now())
-
-    console.log('data.datetime: ', datetime)
     console.log('now: ', now)
 
-    if (isBefore(datetime, now)) {
+    if (isBefore(zonedDate, now)) {
       throw new ValidationException(
         'Campo datetime inválido, insira um horário futuro',
       )
@@ -192,10 +193,14 @@ class MedicalReminderService implements IMedicalReminderService {
     })
 
     if (data.datetime) {
-      const datetime = addHours(new Date(data.datetime), 3)
+      const datetime = new Date(data.datetime)
       const now = new Date(Date.now())
 
-      if (isBefore(datetime, now)) {
+      const zonedDate = toZonedTime(datetime, 'America/Fortaleza')
+      console.log('zonedDate: ', zonedDate)
+      console.log('now: ', now)
+
+      if (isBefore(zonedDate, now)) {
         throw new ValidationException(
           'Campo datetime inválido, insira um horário futuro',
         )
@@ -219,11 +224,15 @@ class MedicalReminderService implements IMedicalReminderService {
     const dataToUpdate: MedicalReminderParams = {
       medic_name: data.medic_name ?? docData.medic_name,
       specialty: data.specialty ?? docData.specialty,
-      datetime: data.datetime ? new Date(data.datetime) : docData.datetime,
+      datetime: data.datetime
+        ? toZonedTime(new Date(data.datetime), 'America/Fortaleza')
+        : docData.datetime,
       address: data.address ?? docData.address,
       active: data.active != undefined ? !!data.active : docData.active,
       attended: data.attended != undefined ? !!data.attended : docData.attended,
     }
+
+    console.log('dataToUpdate: ', JSON.stringify(dataToUpdate, null, 2))
 
     const medicalReminder: MedicalReminder = { ...dataToUpdate, id: data.id }
 
