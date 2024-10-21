@@ -2,7 +2,7 @@ import { AmazonScheduler } from './scheduler'
 import { CreateScheduleCommandInput } from '@aws-sdk/client-scheduler'
 import { MedicalReminder } from '../medicalReminderService/iMedicalReminderService'
 import { format } from 'date-fns'
-import { fromZonedTime } from 'date-fns-tz'
+import { fromZonedTime, toZonedTime } from 'date-fns-tz'
 
 type MedicalSchedulerInput = {
   ask_user_id: string
@@ -18,7 +18,7 @@ export class MedicalScheduler extends AmazonScheduler<MedicalSchedulerInput> {
     return {
       Name: this.scheduleName(data.input.id), // required
       ScheduleExpression: `at(${format(
-        data.input.datetime,
+        toZonedTime(data.input.datetime, timezone),
         "yyyy-MM-dd'T'HH:mm:ss",
       )})`, // required
       ScheduleExpressionTimezone: timezone,
