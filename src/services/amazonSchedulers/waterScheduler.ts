@@ -17,12 +17,13 @@ type WaterSchedulerInput = {
 
 class WaterScheduler extends AmazonScheduler<WaterSchedulerInput> {
   protected getInput(data: WaterSchedulerInput): CreateScheduleCommandInput {
-    const startDate = this._getStartDate(data.reminders)
+    const timezone = 'America/Fortaleza'
+    const startDate = this._getStartDate(data.reminders, timezone)
 
     return {
       Name: this.scheduleName(data.input.elderly.id), // required
       ScheduleExpression: `rate(${data.interval} minute)`, // required
-      ScheduleExpressionTimezone: 'America/Fortaleza',
+      ScheduleExpressionTimezone: timezone,
       Target: {
         Arn: process.env.WATER_SCHEDULER_ARN, // required
         RoleArn: process.env.SCHEDULER_ROLE_ARN, // required
@@ -39,28 +40,25 @@ class WaterScheduler extends AmazonScheduler<WaterSchedulerInput> {
     }
   }
 
-  private _getStartDate(reminders: string[]): Date {
-    const timezone = 'America/Fortaleza'
+  private _getStartDate(reminders: string[], timezone: string): Date {
     let date = toZonedTime(new Date(), timezone)
 
     const nowInSeconds =
       date.getHours() * 60 * 60 + date.getMinutes() * 60 + date.getSeconds()
 
-    let later = reminders[0]
+    let reminderTime = reminders[0]
 
     for (const time of reminders) {
       const [hour, minutes] = time.split(':').map(Number)
-      console.log(`time: ${time}`)
-
       const timeInSeconds = hour * 60 * 60 + minutes * 60
 
       if (timeInSeconds > nowInSeconds) {
-        later = time
+        reminderTime = time
         break
       }
     }
 
-    const [hour, minutes] = later.split(':').map(Number)
+    const [hour, minutes] = reminderTime.split(':').map(Number)
     const reminderTimeInSeconds = hour * 60 * 60 + minutes * 60
 
     if (nowInSeconds > reminderTimeInSeconds) date = addDays(date, 1)
