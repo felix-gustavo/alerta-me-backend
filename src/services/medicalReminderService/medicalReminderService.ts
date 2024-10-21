@@ -17,8 +17,8 @@ import { Timestamp, getFirestore } from 'firebase-admin/firestore'
 import { IAuthorizationService } from '../authorizationService/iAuthorizationService'
 import { IUsersService } from '../usersService/iUsersService'
 import { MedicalScheduler } from '../amazonSchedulers/medicalScheduler'
-import { addHours, isBefore } from 'date-fns'
-import { toZonedTime } from 'date-fns-tz'
+import { isBefore } from 'date-fns'
+import { fromZonedTime } from 'date-fns-tz'
 
 class MedicalReminderService implements IMedicalReminderService {
   constructor(
@@ -34,15 +34,13 @@ class MedicalReminderService implements IMedicalReminderService {
       userId: data.userId,
     })
 
-    const datetime = new Date(data.datetime)
-    const datetimeUTC = addHours(datetime, 3)
+    const datetime = fromZonedTime(data.datetime, 'America/Fortaleza')
     const now = new Date(Date.now())
 
     console.log('datetime: ', datetime)
-    console.log('datetimeUTC: ', datetimeUTC)
     console.log('now: ', now)
 
-    if (isBefore(datetimeUTC, now)) {
+    if (isBefore(datetime, now)) {
       throw new ValidationException(
         'Campo datetime inválido, insira um horário futuro',
       )
@@ -57,7 +55,7 @@ class MedicalReminderService implements IMedicalReminderService {
       address: data.address,
       medic_name: data.medic_name,
       specialty: data.specialty,
-      datetime: datetimeUTC,
+      datetime,
       active: !!data.active,
       attended: null,
     }
@@ -194,18 +192,16 @@ class MedicalReminderService implements IMedicalReminderService {
       userId,
     })
 
-    let datetimeUTC: Date = null
+    let datetime: Date = null
 
     if (data.datetime) {
-      const datetime = new Date(data.datetime)
-      datetimeUTC = addHours(datetime, 3)
+      datetime = fromZonedTime(data.datetime, 'America/Fortaleza')
       const now = new Date(Date.now())
 
       console.log('datetime: ', datetime)
-      console.log('datetimeUTC: ', datetimeUTC)
       console.log('now: ', now)
 
-      if (isBefore(datetimeUTC, now)) {
+      if (isBefore(datetime, now)) {
         throw new ValidationException(
           'Campo datetime inválido, insira um horário futuro',
         )
@@ -229,13 +225,11 @@ class MedicalReminderService implements IMedicalReminderService {
     const dataToUpdate: MedicalReminderParams = {
       medic_name: data.medic_name ?? docData.medic_name,
       specialty: data.specialty ?? docData.specialty,
-      datetime: datetimeUTC ?? docData.datetime,
+      datetime: datetime ?? docData.datetime,
       address: data.address ?? docData.address,
       active: data.active != undefined ? !!data.active : docData.active,
       attended: data.attended != undefined ? !!data.attended : docData.attended,
     }
-
-    console.log('dataToUpdate: ', JSON.stringify(dataToUpdate, null, 2))
 
     const medicalReminder: MedicalReminder = { ...dataToUpdate, id: data.id }
 
@@ -246,15 +240,17 @@ class MedicalReminderService implements IMedicalReminderService {
 
     let schedulerReq: Promise<void> | null = null
     if (ask_user_id) {
-      schedulerReq = dataToUpdate.active
-        ? this.medicalScheduler.createOrUpdate({
-            scheduleName: data.id,
-            data: {
-              ask_user_id,
-              input: medicalReminder,
-            },
-          })
-        : this.medicalScheduler.delete(data.id)
+      if (dataToUpdate.active) {
+        schedulerReq = this.medicalScheduler.createOrUpdate({
+          scheduleName: data.id,
+          data: {
+            ask_user_id,
+            input: medicalReminder,
+          },
+        })
+      } else if (data.active) {
+        this.medicalScheduler.delete(data.id)
+      }
     }
 
     await Promise.all([docSnap.ref.update(dataToUpdate), schedulerReq])
@@ -276,14 +272,18 @@ class MedicalReminderService implements IMedicalReminderService {
       .doc(id)
 
     const docSnap = await docRefUser.get()
-    const docData = docSnap.data()
+    const docData = docSnap.data() as MedicalReminder
 
     if (!docData) throw new NotFoundException('Consulta não encontrada')
 
-    await Promise.all([
-      docSnap.ref.delete(),
-      this.medicalScheduler.delete(docSnap.ref.id),
-    ])
+    if (docData.active) {
+      await Promise.all([
+        docSnap.ref.delete(),
+        this.medicalScheduler.delete(docSnap.ref.id),
+      ])
+    } else {
+      await docSnap.ref.delete()
+    }
 
     return
   }

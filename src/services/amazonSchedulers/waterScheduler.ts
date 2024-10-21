@@ -1,6 +1,7 @@
 import { AmazonScheduler } from './scheduler'
 import { CreateScheduleCommandInput } from '@aws-sdk/client-scheduler'
 import { addDays } from 'date-fns'
+import { toZonedTime } from 'date-fns-tz'
 
 type WaterSchedulerInput = {
   interval: number
@@ -14,15 +15,9 @@ type WaterSchedulerInput = {
   }
 }
 
-type Times = {
-  timeStart: string
-  timeEnd: string
-  nextDate: Date
-}
-
 class WaterScheduler extends AmazonScheduler<WaterSchedulerInput> {
   protected getInput(data: WaterSchedulerInput): CreateScheduleCommandInput {
-    const { timeStart, timeEnd, nextDate } = this._getTimes(data.reminders)
+    const startDate = this._getStartDate(data.reminders)
 
     return {
       Name: this.scheduleName(data.input.elderly.id), // required
@@ -33,12 +28,12 @@ class WaterScheduler extends AmazonScheduler<WaterSchedulerInput> {
         RoleArn: process.env.SCHEDULER_ROLE_ARN, // required
         Input: JSON.stringify({
           ...data.input,
-          start: timeStart,
-          end: timeEnd,
+          start: data.reminders[0],
+          end: data.reminders[data.reminders.length - 1],
         }),
         RetryPolicy: { MaximumRetryAttempts: 2 },
       },
-      StartDate: nextDate,
+      StartDate: startDate,
       FlexibleTimeWindow: { Mode: 'OFF' },
       ActionAfterCompletion: 'NONE',
     }
@@ -60,15 +55,13 @@ class WaterScheduler extends AmazonScheduler<WaterSchedulerInput> {
   //   return
   // }
 
-  private _getTimes(reminders: string[]): Times {
-    const timeStart = reminders[0]
-    const timeEnd = reminders[reminders.length - 1]
+  private _getStartDate(reminders: string[]): Date {
+    let date = toZonedTime(new Date(), 'America/Fortaleza')
 
-    let date = new Date()
     const nowInSeconds =
       date.getHours() * 60 * 60 + date.getMinutes() * 60 + date.getSeconds()
 
-    let later = timeStart
+    let later = reminders[0]
 
     for (const time of reminders) {
       const [hour, minutes] = time.split(':').map(Number)
@@ -83,18 +76,14 @@ class WaterScheduler extends AmazonScheduler<WaterSchedulerInput> {
     }
 
     const [hour, minutes] = later.split(':').map(Number)
-    const curSeconds = hour * 60 * 60 + minutes * 60
+    const reminderTimeInSeconds = hour * 60 * 60 + minutes * 60
 
-    if (nowInSeconds > curSeconds) date = addDays(date, 1)
+    if (nowInSeconds > reminderTimeInSeconds) date = addDays(date, 1)
     date.setHours(hour)
     date.setMinutes(minutes)
     date.setSeconds(0)
 
-    return {
-      timeStart,
-      timeEnd,
-      nextDate: date,
-    }
+    return date
   }
 }
 
