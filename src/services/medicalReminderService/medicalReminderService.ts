@@ -37,9 +37,6 @@ class MedicalReminderService implements IMedicalReminderService {
     const datetime = fromZonedTime(data.datetime, 'America/Fortaleza')
     const now = new Date(Date.now())
 
-    console.log('datetime: ', datetime)
-    console.log('now: ', now)
-
     if (isBefore(datetime, now)) {
       throw new ValidationException(
         'Campo datetime inválido, insira um horário futuro',
@@ -192,14 +189,12 @@ class MedicalReminderService implements IMedicalReminderService {
       userId,
     })
 
+    const timezone = 'America/Fortaleza'
     let datetime: Date = null
 
     if (data.datetime) {
-      datetime = fromZonedTime(data.datetime, 'America/Fortaleza')
+      datetime = fromZonedTime(data.datetime, timezone)
       const now = new Date(Date.now())
-
-      console.log('datetime: ', datetime)
-      console.log('now: ', now)
 
       if (isBefore(datetime, now)) {
         throw new ValidationException(
@@ -225,7 +220,7 @@ class MedicalReminderService implements IMedicalReminderService {
     const dataToUpdate: MedicalReminderParams = {
       medic_name: data.medic_name ?? docData.medic_name,
       specialty: data.specialty ?? docData.specialty,
-      datetime: datetime ?? docData.datetime,
+      datetime: datetime ?? fromZonedTime(docData.datetime, timezone),
       address: data.address ?? docData.address,
       active: data.active != undefined ? !!data.active : docData.active,
       attended: data.attended != undefined ? !!data.attended : docData.attended,
@@ -248,9 +243,7 @@ class MedicalReminderService implements IMedicalReminderService {
             input: medicalReminder,
           },
         })
-      } else if (data.active) {
-        this.medicalScheduler.delete(data.id)
-      }
+      } else this.medicalScheduler.delete(data.id)
     }
 
     await Promise.all([docSnap.ref.update(dataToUpdate), schedulerReq])

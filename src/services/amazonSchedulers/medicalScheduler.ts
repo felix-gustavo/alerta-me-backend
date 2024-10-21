@@ -13,10 +13,12 @@ export class MedicalScheduler extends AmazonScheduler<MedicalSchedulerInput> {
   protected getInput(data: MedicalSchedulerInput): CreateScheduleCommandInput {
     const timezone = 'America/Fortaleza'
 
+    console.log('data.input.datetime: ', data.input.datetime)
+
     return {
       Name: this.scheduleName(data.input.id), // required
       ScheduleExpression: `at(${format(
-        fromZonedTime(data.input.datetime, timezone),
+        data.input.datetime,
         "yyyy-MM-dd'T'HH:mm:ss",
       )})`, // required
       ScheduleExpressionTimezone: timezone,
