@@ -1,7 +1,7 @@
 import { AmazonScheduler } from './scheduler'
 import { CreateScheduleCommandInput } from '@aws-sdk/client-scheduler'
 import { addDays } from 'date-fns'
-import { toZonedTime } from 'date-fns-tz'
+import { fromZonedTime, toZonedTime } from 'date-fns-tz'
 
 type WaterSchedulerInput = {
   interval: number
@@ -39,24 +39,9 @@ class WaterScheduler extends AmazonScheduler<WaterSchedulerInput> {
     }
   }
 
-  // async delete({ elderlyId }: { elderlyId: string }): Promise<void> {
-  //   try {
-  //     const getScheduleCommand = new GetScheduleCommand({ Name: elderlyId })
-  //     const response = await this.client.send(getScheduleCommand)
-  //     if (response.Name == null) return
-
-  //     const command = new DeleteScheduleCommand({
-  //       Name: elderlyId, // required
-  //     })
-  //     await this.client.send(command)
-  //   } catch (error) {
-  //     console.log('delete scheduler error: ', error)
-  //   }
-  //   return
-  // }
-
   private _getStartDate(reminders: string[]): Date {
-    let date = toZonedTime(new Date(), 'America/Fortaleza')
+    const timezone = 'America/Fortaleza'
+    let date = toZonedTime(new Date(), timezone)
 
     const nowInSeconds =
       date.getHours() * 60 * 60 + date.getMinutes() * 60 + date.getSeconds()
@@ -83,7 +68,7 @@ class WaterScheduler extends AmazonScheduler<WaterSchedulerInput> {
     date.setMinutes(minutes)
     date.setSeconds(0)
 
-    return date
+    return fromZonedTime(date, timezone)
   }
 }
 
